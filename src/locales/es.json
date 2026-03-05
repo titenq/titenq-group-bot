@@ -1,0 +1,82 @@
+{
+  "commands": {
+    "start_message": "Bot activo.\nPara votar, responde al mensaje sospechoso con: {{banKeyword}}\nAl alcanzar {{requiredVotes}} votos únicos, el mensaje será eliminado, el usuario sospechoso será silenciado y los administradores decidirán el baneo.",
+    "help_message": "Para reportar y eliminar un mensaje de spam o contenido no deseado, los miembros del grupo pueden responder al mismo con la palabra: {{banKeyword}}\n\nCómo funciona:\n• Cada usuario tiene 1 voto único por mensaje.\n• Al alcanzar {{requiredVotes}} votos, el mensaje se elimina automáticamente.\n• Los administradores pueden evaluar el caso con opciones para ver o restaurar el mensaje, banear al usuario que lo envió, o ignorar el reporte.",
+    "i18n_menu_prompt": "🌍 Selecciona el idioma para este grupo:",
+    "i18n_success_updated": "¡Idioma actualizado a Español con éxito!",
+    "i18n_invalid_language": "Idioma inválido. Soportados: {{supported}}",
+    "faq_success_added": "FAQ '{{trigger}}' añadido con éxito.",
+    "faq_success_removed": "FAQ '{{trigger}}' eliminado.",
+    "faq_list_title": "📚 FAQs disponibles:",
+    "faq_empty": "No hay FAQs registrados.",
+    "faq_invalid_format": "Formato inválido o enlace inexistente. Usar: /faq palabra https://t.me/grupo/id",
+    "faq_trigger_too_long": "Palabra clave demasiado larga. Máximo {{maxLength}} caracteres.",
+    "faq_reply_message": "Consulta la respuesta aquí: {{link}}",
+    "menu_title": "Comandos y Funcionalidades del Bot",
+    "menu_moderation_title": "Moderación Comunitaria",
+    "menu_moderation_desc": "Responde cualquier mensaje con `{{banKeyword}}` para iniciar una votación de eliminación. Al alcanzar {{requiredVotes}} votos, el mensaje es eliminado, el usuario sospechoso es silenciado y los admins son notificados.",
+    "menu_faq_title": "FAQs Dinámicos",
+    "menu_faq_add": "`/faq palabra enlace` — Registra una respuesta rápida (solo admins).",
+    "menu_faq_list": "`/faqs` — Lista todos los FAQs del grupo.",
+    "menu_faq_remove": "`/faq rm palabra` — Elimina un FAQ (solo admins).",
+    "menu_faq_trigger": "Responde a un mensaje con `/faq palabra-clave` para activar el FAQ correspondiente.",
+    "menu_media_title": "Galería de Medios",
+    "menu_media_desc": "Envía una foto o vídeo con la leyenda `/media`. El medio se guardará en la Galería oficial y el Bot publicará el enlace en el grupo.",
+    "menu_gist_title": "GitHub Gist",
+    "menu_gist_desc": "`/gist lenguaje código` — Crea un Gist público en GitHub y publica el enlace en el grupo.",
+    "menu_lang_title": "Idioma",
+    "menu_lang_desc": "`/i18n` — Cambia el idioma del bot para este grupo (solo admins).",
+    "menu_auto_delete": "Este mensaje se eliminará automáticamente en 1 minuto para no contaminar el Grupo."
+  },
+  "vote": {
+    "use_ban_reply": "Usa {{banKeyword}} respondiendo al mensaje sospechoso.",
+    "progress": "{{banKeyword}} ({{votes}} de {{requiredVotes}})",
+    "admin_decision": "Mensaje eliminado por votación de la comunidad.\nAutor sospechoso: {{firstName}} ({{username}}) ({{userId}})\nVotos finales: {{votes}}/{{requiredVotes}}\n{{adminNotice}}\nDecisión de admin:"
+  },
+  "admin": {
+    "notice_mentions": "Admins: {{mentions}}",
+    "notice_generic": "Admins: verifiquen este caso.",
+    "suspect_no_username": "sin @username",
+    "error_chat_validation": "No se pudo validar el chat.",
+    "error_only_admins": "Solo los admins pueden decidir.",
+    "error_preview_invalid": "Mensaje de previsualización inválido.",
+    "preview_deleted": "Previsualización eliminada.",
+    "preview_kept": "Previsualización mantenida.",
+    "error_case_not_found": "Snapshot del caso no encontrado.",
+    "viewed_by": "Visión de contenido por {{viewedBy}}",
+    "content_displayed": "Contenido mostrado en el grupo.",
+    "error_no_votes_yet": "Aún no hay votos registrados.",
+    "voters_list_title": "Votantes ({{count}}):\n{{list}}",
+    "voters_extra_admin": "\n+{{count}} voto(s) extra(s) de admin (modo de prueba).",
+    "restored_by_title": "Mensaje restaurado por {{restoredBy}}",
+    "restored_content_info": "Mensaje enviado originalmente por {{firstName}} ({{originalUsername}})\n\n{{content}}",
+    "error_no_restorable_content": "No hay contenido restaurable guardado para este tipo de mensaje.",
+    "message_restored": "Mensaje restaurado en el grupo.",
+    "error_ban_failed": "Fallo al banear: {{message}}",
+    "error_ban_failed_permissions": "Fallo al banear. Verifique permisos del bot.",
+    "case_decided": "Caso {{decision}} por admin.",
+    "word_banned": "BANEADO",
+    "word_ignored": "IGNORADO"
+  },
+  "markups": {
+    "view_content": "👁 Ver Contenido",
+    "view_voters": "👥 Ver Votantes",
+    "ban_user": "🔨 Banear Usuario",
+    "ignore_report": "✅ Ignorar Reporte",
+    "restore_message": "↩️ Restaurar Mensaje",
+    "delete_view": "🗑 Eliminar Vista",
+    "keep_view": "💬 Mantener Mensaje"
+  },
+  "media": {
+    "attribution": "Enviado por: {{authorName}}\nDe: {{chatTitle}}",
+    "success_posted": "📸 Medio publicado por {{authorName}} con éxito en la galería oficial.\n\n🔗 *[Acceder al Medio]({{postLink}})*",
+    "error_forwarding": "❌ Ocurrió un error al enviar tu medio a nuestro Canal Galería. Revisa la consola del Bot."
+  },
+  "gist": {
+    "description": "Enviado por: {{authorName}} | De: {{chatTitle}}",
+    "success_posted": "📋 Gist creado por {{authorName}} con éxito!\n\n🔗 {{gistUrl}}",
+    "error_missing_language": "❌ Indica el lenguaje. Ejemplo: /gist python def suma(a, b): return a + b",
+    "error_missing_code": "❌ Indica el código después del lenguaje. Ejemplo: /gist python def suma(a, b): return a + b",
+    "error_api_failed": "❌ Ocurrió un error al crear el Gist en GitHub. Revisa la consola del Bot."
+  }
+}

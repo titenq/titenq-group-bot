@@ -1,0 +1,51 @@
+import { VoteCaseStatus } from "../enums/vote-case-status";
+
+export interface PersistedGroup {
+  chatId: number;
+  languageCode: string;
+  title?: string;
+  addedByUserId?: number;
+  addedAt?: string;
+  isActive?: boolean;
+}
+
+export interface PersistedVoteCase {
+  chatId: number;
+  chatTitle?: string;
+  targetMessageId: number;
+  targetUserId: number;
+  targetFirstName: string;
+  targetUsername?: string;
+  snapshotMessageType: string;
+  snapshotMessagePreview: string;
+  snapshotMessageContent: string;
+  snapshotMediaFileId?: string;
+  status: VoteCaseStatus;
+  statusMsgId?: number;
+  voters: number[];
+}
+
+export interface PersistedFaq {
+  id: number;
+  chatId: number;
+  triggerKeyword: string;
+  messageLink: string;
+  createdByUserId?: number;
+  createdAt: string;
+}
+
+export interface OpenCaseRow {
+  chat_id: number;
+  chat_title: string | null;
+  target_message_id: number;
+  target_user_id: number;
+  target_first_name: string;
+  target_username: string | null;
+  snapshot_message_type: string | null;
+  snapshot_message_preview: string | null;
+  snapshot_message_content: string | null;
+  snapshot_media_file_id: string | null;
+  status: VoteCaseStatus;
+  status_msg_id: number | null;
+  voter_id: number | null;
+}

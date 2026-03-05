@@ -1,0 +1,82 @@
+{
+  "commands": {
+    "start_message": "Bot is active.\nTo vote, reply to the suspicious message with: {{banKeyword}}\nWhen it reaches {{requiredVotes}} unique votes, the message will be removed, the suspicious user will be muted, and admins will decide on the ban.",
+    "help_message": "To report and delete a spam or unwanted message, group members can reply to it with the word: {{banKeyword}}\n\nHow it works:\n• Each user has 1 unique vote per message.\n• Upon reaching {{requiredVotes}} votes, the message is automatically deleted.\n• Administrators can then evaluate the case with options to view or restore the message, ban the user who sent it, or ignore the report.",
+    "i18n_menu_prompt": "🌍 Select the language for this group:",
+    "i18n_success_updated": "Language successfully updated to English!",
+    "i18n_invalid_language": "Invalid language. Supported: {{supported}}",
+    "faq_success_added": "FAQ '{{trigger}}' successfully saved.",
+    "faq_success_removed": "FAQ '{{trigger}}' removed.",
+    "faq_list_title": "📚 Available FAQs:",
+    "faq_empty": "No FAQs registered yet.",
+    "faq_invalid_format": "Invalid format or non-existent link. Use: /faq keyword https://t.me/group/id",
+    "faq_trigger_too_long": "Keyword too long. Maximum {{maxLength}} characters.",
+    "faq_reply_message": "Check the answer here: {{link}}",
+    "menu_title": "Bot Commands & Features",
+    "menu_moderation_title": "Community Moderation",
+    "menu_moderation_desc": "Reply to any message with `{{banKeyword}}` to start a removal vote. Upon reaching {{requiredVotes}} votes, the message is deleted, the suspicious user is muted, and admins are notified.",
+    "menu_faq_title": "Dynamic FAQs",
+    "menu_faq_add": "`/faq keyword link` — Register a quick answer (admins only).",
+    "menu_faq_list": "`/faqs` — List all FAQs for this group.",
+    "menu_faq_remove": "`/faq rm keyword` — Remove a FAQ (admins only).",
+    "menu_faq_trigger": "Reply to a message with `/faq keyword` to trigger the corresponding FAQ.",
+    "menu_media_title": "Media Gallery",
+    "menu_media_desc": "Send a photo or video with the caption `/media`. The media will be saved in the official Gallery and the Bot will post the link in the group.",
+    "menu_gist_title": "GitHub Gist",
+    "menu_gist_desc": "`/gist language code` — Creates a public Gist on GitHub and posts the link in the group.",
+    "menu_lang_title": "Language",
+    "menu_lang_desc": "`/i18n` — Change the bot language for this group (admins only).",
+    "menu_auto_delete": "This message will be automatically deleted in 1 minute to keep the Group clean."
+  },
+  "vote": {
+    "use_ban_reply": "Use {{banKeyword}} replying to the suspicious message.",
+    "progress": "{{banKeyword}} ({{votes}} of {{requiredVotes}})",
+    "admin_decision": "Message removed by community vote.\nSuspicious author: {{firstName}} ({{username}}) ({{userId}})\nFinal votes: {{votes}}/{{requiredVotes}}\n{{adminNotice}}\nAdmin decision:"
+  },
+  "admin": {
+    "notice_mentions": "Admins: {{mentions}}",
+    "notice_generic": "Admins: please check this case.",
+    "suspect_no_username": "no @username",
+    "error_chat_validation": "Could not validate chat.",
+    "error_only_admins": "Only admins can decide.",
+    "error_preview_invalid": "Invalid preview message.",
+    "preview_deleted": "Preview deleted.",
+    "preview_kept": "Preview kept.",
+    "error_case_not_found": "Case snapshot not found.",
+    "viewed_by": "Content viewed by {{viewedBy}}",
+    "content_displayed": "Content displayed in the group.",
+    "error_no_votes_yet": "No votes registered yet.",
+    "voters_list_title": "Voters ({{count}}):\n{{list}}",
+    "voters_extra_admin": "\n+{{count}} extra admin vote(s) (test mode).",
+    "restored_by_title": "Message restored by {{restoredBy}}",
+    "restored_content_info": "Message originally sent by {{firstName}} ({{originalUsername}})\n\n{{content}}",
+    "error_no_restorable_content": "No restorable content saved for this type of message.",
+    "message_restored": "Message restored in the group.",
+    "error_ban_failed": "Failed to ban: {{message}}",
+    "error_ban_failed_permissions": "Failed to ban. Check bot permissions.",
+    "case_decided": "Case {{decision}} by admin.",
+    "word_banned": "BANNED",
+    "word_ignored": "IGNORED"
+  },
+  "markups": {
+    "view_content": "👁 View Content",
+    "view_voters": "👥 View Voters",
+    "ban_user": "🔨 Ban User",
+    "ignore_report": "✅ Ignore Report",
+    "restore_message": "↩️ Restore Message",
+    "delete_view": "🗑 Delete View",
+    "keep_view": "💬 Keep Message"
+  },
+  "media": {
+    "attribution": "Sent by: {{authorName}}\nFrom: {{chatTitle}}",
+    "success_posted": "📸 Media successfully posted by {{authorName}} to the official gallery.\n\n🔗 *[Access Media]({{postLink}})*",
+    "error_forwarding": "❌ An error occurred while sending your media to our Gallery Channel. Check the Bot console."
+  },
+  "gist": {
+    "description": "Sent by: {{authorName}} | From: {{chatTitle}}",
+    "success_posted": "📋 Gist successfully created by {{authorName}}!\n\n🔗 {{gistUrl}}",
+    "error_missing_language": "❌ Please provide the language. Example: /gist python def add(a, b): return a + b",
+    "error_missing_code": "❌ Please provide the code after the language. Example: /gist python def add(a, b): return a + b",
+    "error_api_failed": "❌ An error occurred while creating the Gist on GitHub. Check the Bot console."
+  }
+}
