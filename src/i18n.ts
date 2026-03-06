@@ -1,13 +1,16 @@
 import i18next from "i18next";
 
+import { LANGUAGE } from "./config/env";
+import { Language } from "./enums/language";
+
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
 
 export const initI18n = async (): Promise<void> => {
   await i18next.init({
-    lng: "en",
-    fallbackLng: "en",
+    lng: LANGUAGE,
+    fallbackLng: Language.EN,
     resources: {
       en: { translation: en },
       es: { translation: es },
@@ -21,4 +24,4 @@ export const initI18n = async (): Promise<void> => {
   });
 };
 
-export const SUPPORTED_LANGUAGES = ["pt", "en", "es"];
+export const SUPPORTED_LANGUAGES: string[] = Object.values(Language);

@@ -1,5 +1,7 @@
 import { loadEnvFile } from "node:process";
 
+import { Language } from "../enums/language";
+
 try {
   loadEnvFile();
 } catch (error) {
@@ -12,6 +14,7 @@ const {
   BOT_TOKEN: BOT_TOKEN_ENV,
   REQUIRED_VOTES: REQUIRED_VOTES_ENV,
   BAN_KEYWORD: BAN_KEYWORD_ENV,
+  LANGUAGE: LANGUAGE_ENV,
   FAQ_TRIGGER_LENGTH: FAQ_TRIGGER_LENGTH_ENV,
   FAQ_ERROR_TTL_MS: FAQ_ERROR_TTL_MS_ENV,
   MEDIA_CHANNEL_TARGET: MEDIA_CHANNEL_TARGET_ENV,
@@ -27,6 +30,13 @@ if (!BOT_TOKEN_ENV) {
 export const BOT_TOKEN = BOT_TOKEN_ENV;
 export const REQUIRED_VOTES = parseInt(REQUIRED_VOTES_ENV ?? "10", 10);
 export const BAN_KEYWORD = (BAN_KEYWORD_ENV ?? "ban").trim().toLowerCase();
+
+const parsedLanguage = LANGUAGE_ENV?.trim().toLowerCase() as Language;
+
+export const LANGUAGE = Object.values(Language).includes(parsedLanguage)
+  ? parsedLanguage
+  : Language.EN;
+
 export const FAQ_TRIGGER_LENGTH = parseInt(FAQ_TRIGGER_LENGTH_ENV ?? "20", 10);
 export const FAQ_ERROR_TTL_MS = parseInt(FAQ_ERROR_TTL_MS_ENV ?? "60000", 10);
 export const MEDIA_CHANNEL_TARGET = MEDIA_CHANNEL_TARGET_ENV?.trim();
