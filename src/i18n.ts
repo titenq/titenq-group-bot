@@ -3,9 +3,9 @@ import i18next from "i18next";
 import { LANGUAGE } from "./config/env";
 import { Language } from "./enums/language";
 
-import en from "./locales/en.json";
-import es from "./locales/es.json";
-import pt from "./locales/pt.json";
+import en from "./locales/en.json" with { type: "json" };
+import es from "./locales/es.json" with { type: "json" };
+import pt from "./locales/pt.json" with { type: "json" };
 
 export const initI18n = async (): Promise<void> => {
   await i18next.init({
