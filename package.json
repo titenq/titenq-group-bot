@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "npm run generate:helpers && tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
     "start": "node dist/index.js",
     "dev": "npm run generate:helpers && tsx --watch src/index.ts",
     "format": "npm run lint:fix && prettier --write .",
@@ -48,6 +48,7 @@
     "@types/node": "^25.3.3",
     "oxlint": "^1.51.0",
     "prettier": "^3.8.1",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   }
