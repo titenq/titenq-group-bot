@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
-    "start": "node dist/index.js",
-    "dev": "npm run generate:helpers && tsx --watch src/index.ts",
+    "start": "node --env-file=.env dist/index.js",
+    "dev": "npm run generate:helpers && tsx --env-file=.env.dev --watch src/index.ts",
     "format": "npm run lint:fix && prettier --write .",
     "lint": "npm run format && oxlint && npm run type-check",
     "lint:fix": "oxlint --fix -c oxlintrc.json",

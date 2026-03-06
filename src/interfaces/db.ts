@@ -1,5 +1,21 @@
 import { VoteCaseStatus } from "../enums/vote-case-status";
 
+export interface PersistedRoom {
+  id: string;
+  ownerId: number;
+  participants: number[];
+  createdAt: number;
+  expiresAt: number;
+}
+
+export interface PersistedRoomRow {
+  id: string;
+  owner_id: number;
+  created_at: number;
+  expires_at: number;
+  user_id: number | null;
+}
+
 export interface PersistedGroup {
   chatId: number;
   languageCode: string;

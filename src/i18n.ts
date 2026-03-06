@@ -10,7 +10,7 @@ import pt from "./locales/pt.json" with { type: "json" };
 export const initI18n = async (): Promise<void> => {
   await i18next.init({
     lng: LANGUAGE,
-    fallbackLng: Language.EN,
+    fallbackLng: Language.PT,
     resources: {
       en: { translation: en },
       es: { translation: es },
