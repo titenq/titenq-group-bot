@@ -1,7 +1,12 @@
 import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
-import { addVote, updateVoteCaseStatus, upsertVoteCase } from "../db";
+import {
+  addVote,
+  isUserVip,
+  updateVoteCaseStatus,
+  upsertVoteCase,
+} from "../db";
 import { SnapshotType } from "../enums/snapshot";
 import { VoteCaseStatus } from "../enums/vote-case-status";
 import { caseKey } from "../helpers/case-key";
@@ -102,43 +107,54 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
 
   await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
 
-  const previousSize = current.voters.size;
+  const isVip = await isUserVip(ctx.db, chatId, voterId);
 
-  current.voters.add(voterId);
+  if (isVip) {
+    await ctx.reply(ctx.t("trust.vip_action_notify"), {
+      reply_parameters: { message_id: targetMessageId },
+      parse_mode: "HTML",
+    });
 
-  const isNewVote = current.voters.size > previousSize;
-  let countedAsAdminOverride = false;
-
-  if (isNewVote) {
-    await addVote(ctx.db, chatId, targetMessageId, voterId);
+    current.extraAdminVotes = ctx.requiredVotes;
   } else {
-    const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
-    const voterIsAdmin = isAdmin(voterMember);
+    const previousSize = current.voters.size;
 
-    if (voterIsAdmin) {
-      current.extraAdminVotes += 1;
-      countedAsAdminOverride = true;
-    }
+    current.voters.add(voterId);
 
-    if (countedAsAdminOverride) {
-      const votes = current.voters.size + current.extraAdminVotes;
+    const isNewVote = current.voters.size > previousSize;
+    let countedAsAdminOverride = false;
 
-      await upsertVoteStatusMessage(
-        ctx.telegram,
-        ctx.db,
-        ctx.t,
-        current,
-        targetMessageId,
-        votes,
-        ctx.banKeyword,
-        ctx.requiredVotes,
-      );
+    if (isNewVote) {
+      await addVote(ctx.db, chatId, targetMessageId, voterId);
+    } else {
+      const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
+      const voterIsAdmin = isAdmin(voterMember);
 
-      if (votes < ctx.requiredVotes) {
+      if (voterIsAdmin) {
+        current.extraAdminVotes += 1;
+        countedAsAdminOverride = true;
+      }
+
+      if (countedAsAdminOverride) {
+        const votes = current.voters.size + current.extraAdminVotes;
+
+        await upsertVoteStatusMessage(
+          ctx.telegram,
+          ctx.db,
+          ctx.t,
+          current,
+          targetMessageId,
+          votes,
+          ctx.banKeyword,
+          ctx.requiredVotes,
+        );
+
+        if (votes < ctx.requiredVotes) {
+          return;
+        }
+      } else {
         return;
       }
-    } else {
-      return;
     }
   }
 

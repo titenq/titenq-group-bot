@@ -107,6 +107,18 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
     );
   `);
 
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS group_trust_points (
+      chat_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      points INTEGER NOT NULL DEFAULT 0,
+      is_vip BOOLEAN NOT NULL DEFAULT 0,
+      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (chat_id, user_id),
+      FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
+    );
+  `);
+
   return db;
 };
 
@@ -580,4 +592,58 @@ export const getDashboardStats = async (db: BotDb): Promise<DashboardStats> => {
       addedAt: row.added_at,
     })),
   };
+};
+
+export const isUserVip = async (
+  db: BotDb,
+  chatId: number,
+  userId: number,
+): Promise<boolean> => {
+  const row = await db.get<{ is_vip: number }>(
+    "SELECT is_vip FROM group_trust_points WHERE chat_id = ? AND user_id = ?",
+    chatId,
+    userId,
+  );
+
+  return row?.is_vip === 1;
+};
+
+export const addVip = async (
+  db: BotDb,
+  chatId: number,
+  userId: number,
+): Promise<void> => {
+  await db.run(
+    `
+      INSERT INTO group_trust_points (chat_id, user_id, is_vip)
+      VALUES (?, ?, 1)
+      ON CONFLICT(chat_id, user_id) DO UPDATE SET is_vip = 1
+    `,
+    chatId,
+    userId,
+  );
+};
+
+export const removeVip = async (
+  db: BotDb,
+  chatId: number,
+  userId: number,
+): Promise<boolean> => {
+  const result = await db.run(
+    "UPDATE group_trust_points SET is_vip = 0 WHERE chat_id = ? AND user_id = ?",
+    chatId,
+    userId,
+  );
+
+  return (result.changes ?? 0) > 0;
+};
+
+export const listVips = async (
+  db: BotDb,
+  chatId: number,
+): Promise<{ user_id: number; added_at: string }[]> => {
+  return db.all<{ user_id: number; added_at: string }[]>(
+    "SELECT user_id, added_at FROM group_trust_points WHERE chat_id = ? AND is_vip = 1 ORDER BY added_at DESC",
+    chatId,
+  );
 };

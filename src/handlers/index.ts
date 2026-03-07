@@ -9,6 +9,7 @@ import { groupEventHandlers } from "./group-events";
 import { BotContext } from "../interfaces/bot-context";
 import { mediaHandlers } from "./media";
 import { tempChatHandlers } from "./temp-chat";
+import { trustHandlers } from "./trust";
 import { voteHandlers } from "./vote";
 
 export const rootHandler = new Composer<BotContext>();
@@ -19,6 +20,7 @@ rootHandler.use(gistHandlers);
 rootHandler.use(mediaHandlers);
 rootHandler.use(faqHandlers);
 rootHandler.use(tempChatHandlers);
+rootHandler.use(trustHandlers);
 rootHandler.use(groupEventHandlers);
 rootHandler.use(voteHandlers);
 rootHandler.use(adminHandlers);

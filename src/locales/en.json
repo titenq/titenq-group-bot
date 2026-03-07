@@ -102,5 +102,18 @@
     "error_missing_language": "❌ Please provide the language. Example: /gist python def add(a, b): return a + b",
     "error_missing_code": "❌ Please provide the code after the language. Example: /gist python def add(a, b): return a + b",
     "error_api_failed": "❌ An error occurred while creating the Gist on GitHub. Check the Bot console."
+  },
+  "trust": {
+    "error_no_reply_or_id": "❌ Reply to a message or provide the user ID.",
+    "error_invalid_id": "❌ Invalid user ID.",
+    "trust_success": "🛡️ <b>{{name}}</b> (<code>{{userId}}</code>) is now a trusted member (VIP) of this group!",
+    "untrust_success": "➖ <b>{{name}}</b> (<code>{{userId}}</code>) removed from the trusted members list.",
+    "untrust_not_found": "ℹ️ This user is not in the VIP list.",
+    "trust_list_title": "🛡️ <b>Trusted Members (VIPs):</b>",
+    "trust_list_empty": "No VIP members registered.",
+    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>)",
+    "vip_action_notify": "⚡ <b>VIP Instant Action:</b> A trusted member reported this message. Removing immediately...",
+    "user_placeholder": "User",
+    "unknown_user": "Unknown"
   }
 }

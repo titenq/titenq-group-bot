@@ -103,5 +103,18 @@
     "error_missing_language": "❌ Informe a linguagem. Exemplo: /gist python def soma(a, b): return a + b",
     "error_missing_code": "❌ Informe o código após a linguagem. Exemplo: /gist python def soma(a, b): return a + b",
     "error_api_failed": "❌ Ocorreu um erro ao criar o Gist no GitHub. Confira o console do Bot."
+  },
+  "trust": {
+    "error_no_reply_or_id": "❌ Responda a uma mensagem ou informe o ID do usuário.",
+    "error_invalid_id": "❌ ID de usuário inválido.",
+    "trust_success": "🛡️ <b>{{name}}</b> (<code>{{userId}}</code>) agora é um membro confiável (VIP) deste grupo!",
+    "untrust_success": "➖ <b>{{name}}</b> (<code>{{userId}}</code>) removido da lista de membros confiáveis.",
+    "untrust_not_found": "ℹ️ Este usuário não está na lista VIP.",
+    "trust_list_title": "🛡️ <b>Membros Confiáveis (VIPs):</b>",
+    "trust_list_empty": "Nenhum membro VIP cadastrado.",
+    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>)",
+    "vip_action_notify": "⚡ <b>Ação Instantânea VIP:</b> Membro confiável reportou esta mensagem. Removendo imediatamente...",
+    "user_placeholder": "Usuário",
+    "unknown_user": "Desconhecido"
   }
 }
