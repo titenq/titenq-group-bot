@@ -118,6 +118,11 @@ commandHandlers.command("menu", async (ctx) => {
     `🌐 *${ctx.t("commands.menu_lang_title")}*`,
     ctx.t("commands.menu_lang_desc"),
     "",
+    `💬 *${ctx.t("commands.menu_chat_title")}*`,
+    ctx.t("commands.menu_chat_create"),
+    ctx.t("commands.menu_chat_close"),
+    ctx.t("commands.menu_chat_exit"),
+    "",
     "",
     `*${ctx.t("commands.menu_auto_delete")}*`,
   ].join("\n");

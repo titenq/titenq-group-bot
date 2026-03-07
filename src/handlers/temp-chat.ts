@@ -6,6 +6,7 @@ import { CloseRoomResult } from "../enums/close-room-result";
 import { JoinRoomResult } from "../enums/join-room-result";
 import { LeaveRoomResult } from "../enums/leave-room-result";
 import { BotContext } from "../interfaces/bot-context";
+import { tempChatInviteMarkup } from "../markups/temp-chat-invite";
 
 export const tempChatHandlers = new Composer<BotContext>();
 
@@ -39,9 +40,11 @@ tempChatHandlers.command("start", async (ctx) => {
 
   const room = ctx.tempChatService.getRoom(roomId);
 
-  await ctx.reply(ctx.t("commands.temp_chat_joined", { roomId }), {
-    parse_mode: "HTML",
-  });
+  await ctx.telegram.sendMessage(
+    ctx.from.id,
+    ctx.t("commands.temp_chat_joined", { roomId, name: ctx.from.first_name }),
+    { parse_mode: "HTML" },
+  );
 
   if (room) {
     const senderName = ctx.from.first_name;
@@ -94,6 +97,7 @@ tempChatHandlers.command("chat", async (ctx) => {
     }
 
     await ctx.reply(ctx.t("commands.temp_chat_closed"));
+
     return;
   }
 
@@ -102,6 +106,7 @@ tempChatHandlers.command("chat", async (ctx) => {
 
     if (result === LeaveRoomResult.NOT_IN_ROOM) {
       await ctx.reply(ctx.t("commands.temp_chat_not_in_room"));
+      
       return;
     }
 
@@ -134,9 +139,14 @@ tempChatHandlers.command("chat", async (ctx) => {
 
     const room = ctx.tempChatService.getRoom(roomId);
 
-    await ctx.reply(ctx.t("commands.temp_chat_joined", { roomId }), {
-      parse_mode: "HTML",
-    });
+    await ctx.telegram.sendMessage(
+      ctx.from.id,
+      ctx.t("commands.temp_chat_joined", {
+        roomId,
+        name: ctx.from.first_name,
+      }),
+      { parse_mode: "HTML" },
+    );
 
     if (room) {
       const senderName = ctx.from.first_name;
@@ -178,8 +188,19 @@ tempChatHandlers.command("chat", async (ctx) => {
     await ctx.reply(
       ctx.t("commands.temp_chat_created", {
         roomId: room.id,
-        link: inviteLink,
         minutes: minutesLeft,
+      }),
+      {
+        parse_mode: "HTML",
+        ...tempChatInviteMarkup(ctx.t, inviteLink),
+      },
+    );
+
+    await ctx.telegram.sendMessage(
+      ctx.from.id,
+      ctx.t("commands.temp_chat_joined", {
+        roomId: room.id,
+        name: ctx.from.first_name,
       }),
       { parse_mode: "HTML" },
     );

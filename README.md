@@ -36,6 +36,7 @@ Built with **TypeScript** foundations and modern code standards (`ESNext`), the 
 - **Quick Reference Menu**: Any member can type `/menu` to see all available commands and features. The message auto-deletes after 1 minute.
 
 - **Full Internationalization (i18n)**: All bot messages support 🇧🇷 Portuguese, 🇺🇸 English, and 🇪🇸 Spanish. Admins switch language per group with `/i18n`.
+- **Temporary Private Rooms (NEW)**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
 
 - **Resilient Persistence**: Voting sessions and infraction snapshots are persisted in SQLite — zero data loss on restart.
 
@@ -131,6 +132,9 @@ FAQ_ERROR_TTL_MS=60000
 DB_PATH="./data/bot.sqlite"
 MEDIA_CHANNEL_TARGET=@YourChannelUsername
 GITHUB_GIST_TOKEN=<your_github_pat_here>
+CHAT_EXPIRATION_TIME=60 # Room expiration in minutes
+MAX_USERS_PER_ROOM=10 # Max participants allowed in a room
+MAX_MESSAGES_PER_10_SECONDS=5 # Anti-spam rate limit for rooms
 ```
 
 ---
@@ -193,6 +197,11 @@ Galeria oficial e o Bot retornará o link da postagem no grupo.
 
 🌐 Idioma
 /i18n — Altera o idioma do bot para este grupo (apenas admins).
+
+💬 Chat Temporário
+/chat — Cria uma nova sala de chat privada e temporária.
+/chat close — Encerra a sala atual (apenas quem criou a sala).
+/chat exit — Sai da sala atual.
 
 
 Esta mensagem será apagada automaticamente em 1 minuto para não poluir o Grupo.
@@ -319,6 +328,32 @@ Supported languages include: `bash`, `c`, `cpp`, `c#`, `csharp`, `css`, `go`, `h
 If the Gist creation fails, an error message is sent and auto-deleted after 1 minute (configurable via `FAQ_ERROR_TTL_MS` in `.env`).
 
 > If `GITHUB_GIST_TOKEN` is not set, the `/gist` command is silently ignored and the bot behaves normally.
+
+---
+
+## 💬 Temporary Private Rooms
+
+The bot facilitates ephemeral private conversations to keep your main group focused and secure:
+
+- **Create a Room**: Type `/chat` in any group. The bot sends a message with a "Join" button and a "Copy Link" button.
+
+- **Join a Room**: Use the invite link or type `/chat <ROOM_ID>`.
+
+- **Privacy First**: When you join a room, the bot sends management instructions (`/chat close`, `/chat exit`) directly to your **Private Message (PM)** with the bot.
+
+- **Relaying System**: Once in a room, any message you send to the **Bot in PM** is automatically relayed to all other participants in that room.
+
+- **Expiration**: Rooms have a TTL (Time-To-Live) defined by `CHAT_EXPIRATION_TIME`. Once expired, the room and its participant list are permanently deleted.
+
+- **Anti-Spam**: Each participant is subject to a rate limit (`MAX_MESSAGES_PER_10_SECONDS`) to ensure a smooth conversation for everyone.
+
+**Commands Summary**:
+| Command | Action |
+| :--- | :--- |
+| `/chat` | Creates a new room and returns an invite. |
+| `/chat <ID>` | Joins an existing room. |
+| `/chat close` | Deletes the room (Owner only). |
+| `/chat exit` | Leaves the room. |
 
 ---
 
