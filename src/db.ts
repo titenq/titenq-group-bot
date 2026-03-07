@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path";
 
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
+ 
+import { LANGUAGE } from "./config/env";
 
 import { VoteCaseStatus } from "./enums/vote-case-status";
 import { DashboardStats } from "./interfaces/dashboard";
@@ -35,7 +37,7 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
     CREATE TABLE IF NOT EXISTS groups (
       chat_id INTEGER PRIMARY KEY,
       title TEXT,
-      language_code TEXT NOT NULL DEFAULT 'en',
+      language_code TEXT NOT NULL,
       added_by_user_id INTEGER,
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       is_active BOOLEAN DEFAULT TRUE
@@ -218,7 +220,7 @@ export const upsertGroupData = async (
   isActive?: boolean,
 ): Promise<void> => {
   const isActVal = isActive === false ? 0 : 1;
-  const langVal = languageCode ?? "en";
+  const langVal = languageCode ?? LANGUAGE;
 
   await db.run(
     `
