@@ -3,9 +3,8 @@ import { dirname, resolve } from "node:path";
 
 import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
- 
-import { LANGUAGE } from "./config/env";
 
+import { LANGUAGE } from "./config/env";
 import { VoteCaseStatus } from "./enums/vote-case-status";
 import { DashboardStats } from "./interfaces/dashboard";
 import {
