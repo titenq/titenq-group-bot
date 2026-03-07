@@ -37,6 +37,7 @@
     "temp_chat_error": "❌ Could not create the room.",
     "temp_chat_joined": "✅ {{name}}, you joined room <b>{{roomId}}</b>! Send messages here in private chat and everyone will see them.\n\nTo close: <code>/chat close</code>\nTo leave: <code>/chat exit</code>",
     "temp_chat_user_joined": "👤 <b>{{name}}</b> joined room <b>{{roomId}}</b>.\n\nTo close: <code>/chat close</code>\nTo leave: <code>/chat exit</code>",
+    "temp_chat_user_left": "👋 <b>{{name}}</b> left the room.",
     "temp_chat_not_found": "❌ Room not found.",
     "temp_chat_full": "❌ This room has reached the maximum number of users.",
     "temp_chat_already_in": "ℹ️ You are already in this room.",

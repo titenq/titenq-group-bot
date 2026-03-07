@@ -37,6 +37,7 @@
     "temp_chat_error": "❌ No se pudo crear la sala.",
     "temp_chat_joined": "✅ ¡{{name}}, te uniste a la sala <b>{{roomId}}</b>! Envía mensajes aquí en privado para que todos lo vean.\n\nPara cerrar: <code>/chat close</code>\nPara salir: <code>/chat exit</code>",
     "temp_chat_user_joined": "👤 <b>{{name}}</b> se unió a la sala <b>{{roomId}}</b>.\n\nPara cerrar: <code>/chat close</code>\nPara salir: <code>/chat exit</code>",
+    "temp_chat_user_left": "👋 <b>{{name}}</b> de que salió de la sala.",
     "temp_chat_not_found": "❌ Sala no encontrada.",
     "temp_chat_full": "❌ Esta sala ha alcanzado el límite máximo de usuarios.",
     "temp_chat_already_in": "ℹ️ Ya estás en esta sala.",

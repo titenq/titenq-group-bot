@@ -18,7 +18,11 @@ tempChatHandlers.command("start", async (ctx) => {
     return;
   }
 
-  const result = ctx.tempChatService.joinRoom(roomId, ctx.from.id);
+  const result = ctx.tempChatService.joinRoom(
+    roomId,
+    ctx.from.id,
+    ctx.from.first_name,
+  );
 
   if (result === JoinRoomResult.NOT_FOUND) {
     await ctx.reply(ctx.t("commands.temp_chat_not_found"));
@@ -102,11 +106,14 @@ tempChatHandlers.command("chat", async (ctx) => {
   }
 
   if (subcommand === "exit" || subcommand === "leave") {
-    const result = ctx.tempChatService.leaveRoom(ctx.from.id);
+    const result = ctx.tempChatService.leaveRoom(
+      ctx.from.id,
+      ctx.from.first_name,
+    );
 
     if (result === LeaveRoomResult.NOT_IN_ROOM) {
       await ctx.reply(ctx.t("commands.temp_chat_not_in_room"));
-      
+
       return;
     }
 
@@ -117,7 +124,11 @@ tempChatHandlers.command("chat", async (ctx) => {
 
   if (subcommand && subcommand.length >= 2) {
     const roomId = subcommand.toUpperCase();
-    const result = ctx.tempChatService.joinRoom(roomId, ctx.from.id);
+    const result = ctx.tempChatService.joinRoom(
+      roomId,
+      ctx.from.id,
+      ctx.from.first_name,
+    );
 
     if (result === JoinRoomResult.NOT_FOUND) {
       await ctx.reply(ctx.t("commands.temp_chat_not_found"));

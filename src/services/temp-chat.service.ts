@@ -83,6 +83,7 @@ export const createTempChatService = (
     );
 
     removeRoomFromMemory(roomId);
+
     await dbDeleteRoom(db, roomId);
   };
 
@@ -105,6 +106,7 @@ export const createTempChatService = (
           errorMessage,
         );
       });
+
       return;
     }
 
@@ -176,7 +178,7 @@ export const createTempChatService = (
     return room;
   };
 
-  const leaveRoom = (userId: number): LeaveRoomResult => {
+  const leaveRoom = (userId: number, userName: string): LeaveRoomResult => {
     const roomId = userRooms.get(userId);
 
     if (!roomId) {
@@ -192,6 +194,7 @@ export const createTempChatService = (
 
       if (room.participants.length === 0) {
         removeRoomFromMemory(roomId);
+
         dbDeleteRoom(db, roomId).catch((error) => {
           const errorMessage =
             error instanceof Error ? error.message : "unknown error";
@@ -211,6 +214,19 @@ export const createTempChatService = (
             errorMessage,
           );
         });
+
+        notifyParticipants(
+          room,
+          i18next.t("commands.temp_chat_user_left", {
+            name: userName,
+            roomId: room.id,
+          }),
+        ).catch((error) => {
+          console.error(
+            `[TempChat] Error notifying leave in room ${roomId}:`,
+            error,
+          );
+        });
       }
     }
 
@@ -219,7 +235,11 @@ export const createTempChatService = (
     return LeaveRoomResult.LEFT;
   };
 
-  const joinRoom = (roomId: string, userId: number): JoinRoomResult => {
+  const joinRoom = (
+    roomId: string,
+    userId: number,
+    userName: string,
+  ): JoinRoomResult => {
     const room = rooms.get(roomId);
 
     if (!room) {
@@ -237,7 +257,7 @@ export const createTempChatService = (
     const previousRoomId = userRooms.get(userId);
 
     if (previousRoomId && previousRoomId !== roomId) {
-      leaveRoom(userId);
+      leaveRoom(userId, userName);
     }
 
     room.participants.push(userId);
@@ -293,7 +313,6 @@ export const createTempChatService = (
   };
 
   const getRoom = (roomId: string): Room | undefined => rooms.get(roomId);
-
   const getAllRooms = (): Room[] => Array.from(rooms.values());
 
   const isRateLimited = (userId: number, maxMessages: number): boolean => {
