@@ -1,13 +1,52 @@
 import i18next from "i18next";
 import { Composer } from "telegraf";
+import { callbackQuery } from "telegraf/filters";
 
-import { upsertGroupData } from "../db";
+import { getGroupFeatures, toggleGroupFeature, upsertGroupData } from "../db";
+import { GROUP_FEATURES, GroupFeature } from "../enums/group-feature";
 import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 import { BotContext } from "../interfaces/bot-context";
+import { groupFeaturesMarkup } from "../markups/group-features";
 import { i18nOptionsMarkup } from "../markups/i18n-options";
 
 export const commandHandlers = new Composer<BotContext>();
+
+const buildFeaturesText = (ctx: BotContext) => {
+  return [
+    ctx.t("commands.features_title"),
+    "",
+    ctx.t("commands.features_description"),
+  ].join("\n");
+};
+
+const showFeaturesPanel = async (ctx: BotContext) => {
+  if (!ctx.chat || ctx.chat.type === "private" || !ctx.from || !ctx.message) {
+    return;
+  }
+
+  const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+  if (!isAdmin(actor)) {
+    return;
+  }
+
+  await upsertGroupData(
+    ctx.db,
+    ctx.chat.id,
+    "title" in ctx.chat ? ctx.chat.title : undefined,
+    ctx.from.id,
+  );
+
+  const features = await getGroupFeatures(ctx.db, ctx.chat.id);
+
+  await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
+
+  await ctx.reply(buildFeaturesText(ctx), {
+    parse_mode: "HTML",
+    ...groupFeaturesMarkup(ctx.t, features),
+  });
+};
 
 commandHandlers.start(async (ctx) => {
   await ctx.reply(
@@ -92,6 +131,8 @@ commandHandlers.action(/^i18n_set_(.+)$/, async (ctx) => {
   }
 });
 
+commandHandlers.command(["features", "feats"], showFeaturesPanel);
+
 commandHandlers.command("menu", async (ctx) => {
   const { banKeyword, requiredVotes } = ctx;
 
@@ -116,6 +157,9 @@ commandHandlers.command("menu", async (ctx) => {
     `🌐 *${ctx.t("commands.menu_lang_title")}*`,
     ctx.t("commands.menu_lang_desc"),
     "",
+    `⚙️ *${ctx.t("commands.menu_features_title")}*`,
+    ctx.t("commands.menu_features_desc"),
+    "",
     `💬 *${ctx.t("commands.menu_chat_title")}*`,
     ctx.t("commands.menu_chat_create"),
     ctx.t("commands.menu_chat_close"),
@@ -139,4 +183,96 @@ commandHandlers.command("menu", async (ctx) => {
     telegram: ctx.telegram,
     triggerMessageId: ctx.message.message_id,
   });
+});
+
+commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
+  if (!ctx.chat || ctx.chat.type === "private") {
+    return next();
+  }
+
+  const callbackData = ctx.callbackQuery.data;
+
+  if (callbackData === "features_delete_panel") {
+    const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+    if (!isAdmin(actor)) {
+      return ctx.answerCbQuery(ctx.t("admin.error_only_admins"), {
+        show_alert: true,
+      });
+    }
+
+    if (ctx.callbackQuery.message) {
+      await safeDelete(
+        ctx.telegram,
+        ctx.chat.id,
+        ctx.callbackQuery.message.message_id,
+      );
+    }
+
+    await ctx.answerCbQuery(ctx.t("commands.features_panel_deleted"));
+
+    return;
+  }
+
+  if (!callbackData || !callbackData.startsWith("features_toggle_")) {
+    return next();
+  }
+
+  const featureKey = callbackData.replace(
+    "features_toggle_",
+    "",
+  ) as GroupFeature;
+
+  if (!GROUP_FEATURES.includes(featureKey)) {
+    await ctx.answerCbQuery(ctx.t("commands.features_invalid_feature"), {
+      show_alert: true,
+    });
+
+    return;
+  }
+
+  const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+  if (!isAdmin(actor)) {
+    return ctx.answerCbQuery(ctx.t("admin.error_only_admins"), {
+      show_alert: true,
+    });
+  }
+
+  await upsertGroupData(
+    ctx.db,
+    ctx.chat.id,
+    "title" in ctx.chat ? ctx.chat.title : undefined,
+    ctx.from.id,
+  );
+
+  const updatedFeature = await toggleGroupFeature(
+    ctx.db,
+    ctx.chat.id,
+    featureKey,
+    ctx.from.id,
+  );
+
+  const features = await getGroupFeatures(ctx.db, ctx.chat.id);
+  const featureLabel = ctx.t(
+    `commands.features_feature_${updatedFeature.featureKey}`,
+  );
+  
+  const featureStatus = updatedFeature.isEnabled
+    ? ctx.t("commands.features_status_on")
+    : ctx.t("commands.features_status_off");
+
+  if (ctx.callbackQuery.message) {
+    await ctx.editMessageText(buildFeaturesText(ctx), {
+      parse_mode: "HTML",
+      ...groupFeaturesMarkup(ctx.t, features),
+    });
+  }
+
+  await ctx.answerCbQuery(
+    ctx.t("commands.features_toggle_success", {
+      feature: featureLabel,
+      status: featureStatus,
+    }),
+  );
 });

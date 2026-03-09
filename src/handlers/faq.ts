@@ -3,10 +3,12 @@ import { Composer, Markup } from "telegraf";
 import { FAQ_TRIGGER_LENGTH } from "../config/env";
 import {
   getGroupFaq,
+  isGroupFeatureEnabled,
   listGroupFaqs,
   removeGroupFaq,
   upsertGroupFaq,
 } from "../db";
+import { GroupFeature } from "../enums/group-feature";
 import {
   isAdmin,
   normalize,
@@ -20,6 +22,10 @@ export const faqHandlers = new Composer<BotContext>();
 
 faqHandlers.command("faq", async (ctx) => {
   if (!ctx.chat) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.FAQ))) {
     return;
   }
 
@@ -193,6 +199,10 @@ faqHandlers.command("faq", async (ctx) => {
 
 faqHandlers.command("faqs", async (ctx) => {
   if (!ctx.chat) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.FAQ))) {
     return;
   }
 

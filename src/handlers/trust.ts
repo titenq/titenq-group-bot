@@ -1,7 +1,8 @@
 import { Composer } from "telegraf";
 
 import { VIP_MEMBER_TAG } from "../config/constants";
-import { addVip, listVips, removeVip } from "../db";
+import { addVip, isGroupFeatureEnabled, listVips, removeVip } from "../db";
+import { GroupFeature } from "../enums/group-feature";
 import { isAdmin, scheduleMessageCleanup, setChatMemberTag } from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
@@ -66,6 +67,10 @@ trustHandlers.command("trust", async (ctx) => {
   const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
   if (!isAdmin(actor)) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
     return;
   }
 
@@ -146,6 +151,10 @@ trustHandlers.command("untrust", async (ctx) => {
     return;
   }
 
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
+    return;
+  }
+
   const target = await getTargetUser(ctx);
 
   if (!target || !target.id) {
@@ -214,6 +223,10 @@ trustHandlers.command("trustlist", async (ctx) => {
   const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
   if (!isAdmin(actor)) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
     return;
   }
 

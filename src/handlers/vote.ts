@@ -5,9 +5,11 @@ import {
   addGlobalBan,
   addVote,
   getUserTrustWeight,
+  isGroupFeatureEnabled,
   upsertVoteCase,
   updateVoteCaseStatus,
 } from "../db";
+import { GroupFeature } from "../enums/group-feature";
 import { SnapshotType } from "../enums/snapshot";
 import { VoteCaseStatus } from "../enums/vote-case-status";
 import {
@@ -41,6 +43,12 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const normalizedBanKeyword = ctx.banKeyword.toLowerCase();
 
   if (normalizedCommand !== normalizedBanKeyword) {
+    return;
+  }
+
+  if (
+    !(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.MODERATION))
+  ) {
     return;
   }
 
@@ -107,6 +115,7 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
         reason: reason || ctx.t("admin.no_reason_provided"),
       }),
     );
+    
     await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
     await safeDelete(ctx.telegram, chatId, targetMessageId);
 

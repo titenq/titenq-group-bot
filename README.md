@@ -35,6 +35,8 @@ Built with **TypeScript** foundations and modern code standards (`ESNext`), the 
 
 - **Quick Reference Menu**: Any member can type `/menu` to see all available commands and features. The message auto-deletes after 1 minute.
 
+- **Per-Group Feature Toggles (NEW)**: Group admins can use `/features` to enable or disable specific bot features such as FAQ, Gist, Media, Moderation, and Trust for that specific group.
+
 - **Full Internationalization (i18n)**: All bot messages support 🇧🇷 Portuguese, 🇺🇸 English, and 🇪🇸 Spanish. Admins switch language per group with `/i18n`.
 
 - **Temporary Private Rooms (NEW)**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
@@ -184,13 +186,6 @@ Responda qualquer mensagem com ban para iniciar uma votação de remoção.
 Ao atingir 10 votos (valor padrão), a mensagem é removida, o usuário suspeito é
 silenciado e os admins são notificados.
 
-⚖️ Sistema de Confiança (Admins)
-/trust [ID] [peso] — Define um membro como confiável e o peso do seu voto (1 a 10).
-/untrust [ID] — Remove o status de membro confiável e reseta o peso para 1.
-/trustlist — Lista todos os membros confiáveis e seus respectivos pesos de voto.
-Observação: a etiqueta VIP só será aplicada/removida no Telegram se o bot for
-admin e tiver a permissão de gerenciar etiquetas de membros.
-
 📚 FAQs Dinâmicos
 /faq palavra link — Cadastra uma resposta rápida (apenas admins).
 /faqs — Lista todos os FAQs do grupo.
@@ -207,10 +202,19 @@ Galeria oficial e o Bot retornará o link da postagem no grupo.
 🌐 Idioma
 /i18n — Altera o idioma do bot para este grupo (apenas admins).
 
+⚙️ Features
+/features — Liga ou desliga as funcionalidades do bot neste grupo (apenas admins).
+
 💬 Chat Temporário
 /chat — Cria uma nova sala de chat privada e temporária.
 /chat close — Encerra a sala atual (apenas quem criou a sala).
 /chat exit — Sai da sala atual.
+
+🛡 Membros Confiáveis (Trust)
+/trust [ID] [peso] — Define um membro como confiável e o peso do seu voto no comando ban (apenas admins). O peso deve ser de 1 a 10.
+/trustlist — Lista todos os membros confiáveis e seus respectivos pesos dos votos (apenas admins).
+/untrust [ID] — Remove o status de membro confiável e reseta o peso para 1 (apenas admins).
+Observação: a etiqueta VIP só será aplicada/removida no Telegram se o bot for admin e tiver a permissão de gerenciar etiquetas de membros.
 
 
 Esta mensagem será apagada automaticamente em 1 minuto para não poluir o Grupo.
@@ -250,6 +254,19 @@ Admins can delegate moderation power to trusted members by increasing their vote
 - **VIP Label in Telegram**: When available, the bot also applies/removes the visual `VIP` member tag in Telegram. This is optional and depends on the bot having the administrator permission to manage member tags.
 
 All trust-related error messages (invalid weight, user not found) and command calls are automatically deleted after 1 minute to keep the group history clean.
+
+---
+
+## ⚙️ /features — Feature Toggles
+
+Group administrators can use `/features` to open an inline control panel and enable or disable specific bot features for that group only.
+
+Alias available: `/feats`
+
+- **Default State**: All supported features start as enabled (`ON`).
+- **Tracked Changes**: Each toggle stores the last admin who changed it and the last update timestamp in SQLite.
+- **Current Toggles**: `/faq`, `/gist`, `/media`, `ban`, and `/trust`.
+- **Inline Controls**: The panel updates in place and includes a button to delete the panel message.
 
 ---
 

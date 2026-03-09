@@ -5,10 +5,13 @@ import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
 
 import { LANGUAGE } from "./config/env";
+import { GROUP_FEATURES, GroupFeature } from "./enums/group-feature";
 import { VoteCaseStatus } from "./enums/vote-case-status";
 import { DashboardStats } from "./interfaces/dashboard";
 import { GlobalBan, GlobalBanHistoryRow } from "./interfaces/global-ban";
+import { GroupFeatureState } from "./interfaces/group-feature";
 import {
+  GroupFeatureRow,
   OpenCaseRow,
   PersistedFaq,
   PersistedGroup,
@@ -132,6 +135,18 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
       trust_weight INTEGER NOT NULL DEFAULT 1,
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (chat_id, user_id),
+      FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS group_features (
+      chat_id INTEGER NOT NULL,
+      feature_key TEXT NOT NULL,
+      is_enabled BOOLEAN NOT NULL DEFAULT 1,
+      updated_by_user_id INTEGER,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (chat_id, feature_key),
       FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
     );
   `);
@@ -658,6 +673,99 @@ export const getUserTrustWeight = async (
   return row?.trust_weight ?? 1;
 };
 
+export const getGroupFeatures = async (
+  db: BotDb,
+  chatId: number,
+): Promise<GroupFeatureState[]> => {
+  const rows = await db.all<GroupFeatureRow[]>(
+    `
+      SELECT chat_id, feature_key, is_enabled, updated_by_user_id, updated_at
+      FROM group_features
+      WHERE chat_id = ?
+    `,
+    chatId,
+  );
+
+  const rowsByKey = new Map(rows.map((row) => [row.feature_key, row]));
+
+  return GROUP_FEATURES.map((featureKey) => {
+    const row = rowsByKey.get(featureKey);
+
+    return {
+      featureKey,
+      isEnabled: row ? row.is_enabled === 1 : true,
+      updatedAt: row?.updated_at ?? undefined,
+      updatedByUserId: row?.updated_by_user_id ?? undefined,
+    };
+  });
+};
+
+export const isGroupFeatureEnabled = async (
+  db: BotDb,
+  chatId: number,
+  featureKey: GroupFeature,
+): Promise<boolean> => {
+  const row = await db.get<{ is_enabled: number }>(
+    `
+      SELECT is_enabled
+      FROM group_features
+      WHERE chat_id = ? AND feature_key = ?
+    `,
+    chatId,
+    featureKey,
+  );
+
+  return row ? row.is_enabled === 1 : true;
+};
+
+export const toggleGroupFeature = async (
+  db: BotDb,
+  chatId: number,
+  featureKey: GroupFeature,
+  adminId: number,
+): Promise<GroupFeatureState> => {
+  const currentState = await isGroupFeatureEnabled(db, chatId, featureKey);
+  const nextState = !currentState;
+
+  await db.run(
+    `
+      INSERT INTO group_features (
+        chat_id,
+        feature_key,
+        is_enabled,
+        updated_by_user_id,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(chat_id, feature_key) DO UPDATE SET
+        is_enabled = excluded.is_enabled,
+        updated_by_user_id = excluded.updated_by_user_id,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    chatId,
+    featureKey,
+    nextState ? 1 : 0,
+    adminId,
+  );
+
+  const row = await db.get<GroupFeatureRow>(
+    `
+      SELECT chat_id, feature_key, is_enabled, updated_by_user_id, updated_at
+      FROM group_features
+      WHERE chat_id = ? AND feature_key = ?
+    `,
+    chatId,
+    featureKey,
+  );
+
+  return {
+    featureKey,
+    isEnabled: row ? row.is_enabled === 1 : nextState,
+    updatedAt: row?.updated_at ?? undefined,
+    updatedByUserId: row?.updated_by_user_id ?? undefined,
+  };
+};
+
 export const addVip = async (
   db: BotDb,
   chatId: number,
@@ -785,6 +893,12 @@ export const migrateChatData = async (
 
     await db.run(
       "UPDATE group_trust_points SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE group_features SET chat_id = ? WHERE chat_id = ?",
       newChatId,
       oldChatId,
     );

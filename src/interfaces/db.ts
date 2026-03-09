@@ -65,3 +65,11 @@ export interface OpenCaseRow {
   status_msg_id: number | null;
   voter_id: number | null;
 }
+
+export interface GroupFeatureRow {
+  chat_id: number;
+  feature_key: string;
+  is_enabled: number;
+  updated_by_user_id: number | null;
+  updated_at: string | null;
+}

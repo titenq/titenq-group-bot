@@ -1,6 +1,8 @@
 import { Composer } from "telegraf";
 
 import { GITHUB_GIST_TOKEN } from "../config/env";
+import { isGroupFeatureEnabled } from "../db";
+import { GroupFeature } from "../enums/group-feature";
 import {
   createGist,
   isGroup,
@@ -19,6 +21,10 @@ gistHandlers.command("gist", async (ctx, next) => {
 
   if (!GITHUB_GIST_TOKEN) {
     return next();
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.GIST))) {
+    return;
   }
 
   const fullText = ctx.message.text;
