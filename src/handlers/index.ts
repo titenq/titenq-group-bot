@@ -10,6 +10,7 @@ import { BotContext } from "../interfaces/bot-context";
 import { mediaHandlers } from "./media";
 import { tempChatHandlers } from "./temp-chat";
 import { trustHandlers } from "./trust";
+import { globalBanActions } from "./global-ban-actions";
 import { voteHandlers } from "./vote";
 
 export const rootHandler = new Composer<BotContext>();
@@ -23,4 +24,5 @@ rootHandler.use(tempChatHandlers);
 rootHandler.use(trustHandlers);
 rootHandler.use(groupEventHandlers);
 rootHandler.use(voteHandlers);
+rootHandler.use(globalBanActions);
 rootHandler.use(adminHandlers);

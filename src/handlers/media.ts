@@ -13,9 +13,11 @@ mediaHandlers.on([message("photo"), message("video")], async (ctx, next) => {
     return next();
   }
 
-  const caption = ctx.message.caption.toLowerCase();
+  const caption = ctx.message.caption.trim();
+  const [commandToken] = caption.split(/\s+/);
+  const normalizedCommand = (commandToken ?? "").toLowerCase();
 
-  if (!caption.includes("/media")) {
+  if (normalizedCommand !== "/media") {
     return next();
   }
 
@@ -56,7 +58,7 @@ mediaHandlers.on([message("photo"), message("video")], async (ctx, next) => {
     const postLink = `https://t.me/${formattedChannelUsername}/${copiedMessage.message_id}`;
 
     await ctx.reply(ctx.t("media.success_posted", { authorName, postLink }), {
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
       link_preview_options: { is_disabled: true },
     });
   } catch (error) {

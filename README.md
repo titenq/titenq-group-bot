@@ -36,9 +36,11 @@ Built with **TypeScript** foundations and modern code standards (`ESNext`), the 
 - **Quick Reference Menu**: Any member can type `/menu` to see all available commands and features. The message auto-deletes after 1 minute.
 
 - **Full Internationalization (i18n)**: All bot messages support 🇧🇷 Portuguese, 🇺🇸 English, and 🇪🇸 Spanish. Admins switch language per group with `/i18n`.
+
 - **Temporary Private Rooms (NEW)**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
 
 - **Resilient Persistence**: Voting sessions and infraction snapshots are persisted in SQLite — zero data loss on restart.
+
 - **Group Migration Protection (NEW)**: Automatically detects when a group chat is upgraded to a supergroup. Migrates all settings, FAQs, and active voting cases to the new Chat ID seamlessly.
 
 - **Trust Weight System (NEW)**: Admins can assign specific "vote weights" to trusted members. A trusted member's vote counts as multiple votes, allowing for faster moderation.
@@ -94,10 +96,6 @@ For the bot to function correctly in your group, ensure the following steps are 
 1. Add the bot to your Telegram group.
 2. Promote the bot to **Administrator**.
 3. **Hard Permissions Required**: The bot must have **Delete messages** and **Ban users** permissions to enforce moderation actions.
-
-To view the help message and bot instructions within the group, any member can send:
-`/help@TitenQGroupBot`
-_(Note: Change `@TitenQGroupBot` to your actual bot's username)._
 
 ---
 
@@ -259,7 +257,7 @@ To avoid repetitive questions in the community, the bot features a robust SQL-ba
 
 - **List FAQs (Anyone)**: Send `/faqs`. The bot will display an inline keyboard with all registered topics for the current group.
 
-- **Passive Trigger (Anyone)**: Simply reply to someone's question with the exact `<keyword>`. The bot will delete your keyword message and reply to the target user with the saved link in its place!
+- **FAQ Display (Anyone)**: Reply to someone's message with `/faq <keyword>`. The bot will delete your command message and reply to the target user with the saved link.
 
 - **Remove FAQ (Admins)**: Use `/faq rm <keyword>`.
 
@@ -277,7 +275,7 @@ The bot can forward photos and videos sent in a group to a dedicated public Tele
 MEDIA_CHANNEL_TARGET=@YourChannelUsername
 ```
 
-**How to use**: Send a photo or video with the caption `/media` (or any caption containing `/media`) in the group. The bot will:
+**How to use**: Send a photo or video with the caption starting with `/media` in the group. The bot will:
 
 1. Copy the media to the configured channel, crediting the original author and group name.
 2. Delete the original message from the group.

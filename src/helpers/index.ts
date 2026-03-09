@@ -4,6 +4,7 @@ export { caseKey } from "./case-key";
 export { cleanupCaseMessages } from "./cleanup-case-messages";
 export { createGist } from "./create-gist";
 export { createMediaSenders } from "./create-media-senders";
+export { formatGroupDate } from "./format-group-date";
 export { formatVoterDisplay } from "./format-voter-display";
 export { getMessageSnapshot } from "./get-message-snapshot";
 export { isAdmin } from "./is-admin";

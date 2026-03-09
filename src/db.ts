@@ -7,6 +7,7 @@ import sqlite3 from "sqlite3";
 import { LANGUAGE } from "./config/env";
 import { VoteCaseStatus } from "./enums/vote-case-status";
 import { DashboardStats } from "./interfaces/dashboard";
+import { GlobalBan, GlobalBanHistoryRow } from "./interfaces/global-ban";
 import {
   OpenCaseRow,
   PersistedFaq,
@@ -105,6 +106,21 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
       PRIMARY KEY (room_id, user_id),
       FOREIGN KEY (room_id) REFERENCES chat_rooms(id) ON DELETE CASCADE
     );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS global_bans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      username TEXT,
+      group_id INTEGER NOT NULL,
+      group_name TEXT NOT NULL,
+      message_text TEXT,
+      reason TEXT,
+      admin_id INTEGER NOT NULL,
+      date INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+    CREATE INDEX IF NOT EXISTS idx_global_bans_user_id ON global_bans(user_id);
   `);
 
   await db.exec(`
@@ -682,6 +698,52 @@ export const listVips = async (
   return db.all<{ user_id: number; trust_weight: number; added_at: string }[]>(
     "SELECT user_id, trust_weight, added_at FROM group_trust_points WHERE chat_id = ? AND is_vip = 1 ORDER BY added_at DESC",
     chatId,
+  );
+};
+
+export const addGlobalBan = async (
+  db: BotDb,
+  ban: Omit<GlobalBan, "id" | "date">,
+): Promise<void> => {
+  await db.run(
+    `INSERT INTO global_bans (
+      user_id, username, group_id, group_name, message_text, reason, admin_id, date
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, unixepoch())`,
+    ban.user_id,
+    ban.username,
+    ban.group_id,
+    ban.group_name,
+    ban.message_text,
+    ban.reason,
+    ban.admin_id,
+  );
+};
+
+export const getGlobalBanCount = async (
+  db: BotDb,
+  userId: number,
+): Promise<number> => {
+  const result = await db.get<{ count: number }>(
+    "SELECT COUNT(*) as count FROM global_bans WHERE user_id = ?",
+    userId,
+  );
+
+  return result?.count ?? 0;
+};
+
+export const getGlobalBanHistory = async (
+  db: BotDb,
+  userId: number,
+  limit = 5,
+): Promise<GlobalBanHistoryRow[]> => {
+  return db.all<GlobalBanHistoryRow[]>(
+    `SELECT group_name, reason, message_text, date
+     FROM global_bans
+     WHERE user_id = ?
+     ORDER BY date DESC
+     LIMIT ?`,
+    userId,
+    limit,
   );
 };
 

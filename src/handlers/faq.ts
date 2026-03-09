@@ -1,5 +1,4 @@
 import { Composer, Markup } from "telegraf";
-import { message } from "telegraf/filters";
 
 import { FAQ_ERROR_TTL_MS, FAQ_TRIGGER_LENGTH } from "../config/env";
 import {
@@ -21,12 +20,6 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     return;
   }
 
-  const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
-
-  if (!isAdmin(actor)) {
-    return;
-  }
-
   const argString = ctx.match[1] || "";
   const parts = argString.trim().split(" ").filter(Boolean);
 
@@ -40,6 +33,69 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     return;
   }
 
+  if (parts.length === 1) {
+    const triggerKeyword = normalize(parts[0]);
+
+    if (triggerKeyword.length > FAQ_TRIGGER_LENGTH) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_trigger_too_long", {
+          maxLength: FAQ_TRIGGER_LENGTH,
+        }),
+      );
+
+      setTimeout(() => {
+        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
+      }, FAQ_ERROR_TTL_MS);
+
+      return;
+    }
+
+    if (!ctx.message.reply_to_message) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_trigger_reply_required"),
+      );
+
+      setTimeout(() => {
+        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
+        safeDelete(ctx.telegram, ctx.chat!.id, ctx.message.message_id);
+      }, FAQ_ERROR_TTL_MS);
+
+      return;
+    }
+
+    const messageLink = await getGroupFaq(ctx.db, ctx.chat.id, triggerKeyword);
+
+    if (!messageLink) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_not_found", { trigger: triggerKeyword }),
+      );
+
+      setTimeout(() => {
+        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
+      }, FAQ_ERROR_TTL_MS);
+
+      return;
+    }
+
+    await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
+    await ctx.reply(
+      ctx.t("commands.faq_reply_message", { link: messageLink }),
+      {
+        reply_parameters: {
+          message_id: ctx.message.reply_to_message.message_id,
+        },
+      },
+    );
+
+    return;
+  }
+
+  const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
+
+  if (!isAdmin(actor)) {
+    return;
+  }
+
   const isRemoving = parts[0] === "rm";
   let triggerKeyword = isRemoving ? parts[1] : parts[0];
   const urlLink = isRemoving ? undefined : parts[1];
@@ -48,7 +104,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     triggerKeyword = normalize(triggerKeyword);
   }
 
-  if (!triggerKeyword || (!isRemoving && !urlLink)) {
+  if (
+    !triggerKeyword ||
+    (isRemoving && parts.length !== 2) ||
+    (!isRemoving && parts.length !== 2)
+  ) {
     const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
     setTimeout(() => {
@@ -141,48 +201,4 @@ faqHandlers.hears(/^\/f[aáàâãä]qs(?:@[\w]+)?$/i, async (ctx) => {
       `Failed to execute /faqs: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
-});
-
-faqHandlers.on(message("text"), async (ctx, next) => {
-  if (!ctx.chat || !ctx.message.reply_to_message) {
-    return next();
-  }
-
-  const potentialTrigger = normalize(ctx.message.text);
-
-  if (
-    potentialTrigger.length > FAQ_TRIGGER_LENGTH ||
-    potentialTrigger.includes(" ")
-  ) {
-    return next();
-  }
-
-  try {
-    const messageLink = await getGroupFaq(
-      ctx.db,
-      ctx.chat.id,
-      potentialTrigger,
-    );
-
-    if (messageLink) {
-      await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-
-      await ctx.reply(
-        ctx.t("commands.faq_reply_message", { link: messageLink }),
-        {
-          reply_parameters: {
-            message_id: ctx.message.reply_to_message.message_id,
-          },
-        },
-      );
-
-      return;
-    }
-  } catch (error) {
-    console.error(
-      `Error intercepting FAQ reply trigger: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  }
-
-  return next();
 });

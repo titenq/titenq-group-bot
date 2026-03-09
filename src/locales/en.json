@@ -11,6 +11,8 @@
     "faq_empty": "No FAQs registered yet.",
     "faq_invalid_format": "Invalid format or non-existent link. Use: /faq keyword https://t.me/group/id",
     "faq_trigger_too_long": "Keyword too long. Maximum {{maxLength}} characters.",
+    "faq_trigger_reply_required": "To display a FAQ, reply to a message with: /faq keyword",
+    "faq_not_found": "No FAQ found for '{{trigger}}'.",
     "faq_reply_message": "Check the answer here: {{link}}",
     "menu_title": "Bot Commands & Features",
     "menu_moderation_title": "Community Moderation",
@@ -84,20 +86,23 @@
     "error_ban_failed_permissions": "Failed to ban. Check bot permissions.",
     "case_decided": "Case {{decision}} by admin.",
     "word_banned": "BANNED",
-    "word_ignored": "IGNORED"
+    "word_ignored": "IGNORED",
+    "user_banned_by_admin": "🔨 <b>{{firstName}}</b> was banned directly by an administrator.\nReason: {{reason}}",
+    "ban_failed": "❌ Failed to ban user.",
+    "no_reason_provided": "None provided"
   },
   "markups": {
-    "view_content": "👁 View Content",
+    "view_content": "🖼️ View Content",
     "view_voters": "👥 View Voters",
     "ban_user": "🔨 Ban User",
     "ignore_report": "✅ Ignore Report",
     "restore_message": "↩️ Restore Message",
-    "delete_view": "🗑 Delete View",
+    "delete_view": "🗑️ Delete View",
     "keep_view": "💬 Keep Message"
   },
   "media": {
     "attribution": "Sent by: {{authorName}}\nFrom: {{chatTitle}}",
-    "success_posted": "📸 Media successfully posted by {{authorName}} to the official gallery.\n\n🔗 *[Access Media]({{postLink}})*",
+    "success_posted": "📸 Media successfully posted by {{authorName}} to the official gallery.\n\n🔗 <a href=\"{{postLink}}\">Access Media</a>",
     "error_forwarding": "❌ An error occurred while sending your media to our Gallery Channel. Check the Bot console."
   },
   "gist": {
@@ -119,5 +124,15 @@
     "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>) — vote weight: {{weight}}",
     "user_placeholder": "User",
     "unknown_user": "Unknown"
+  },
+  "global_ban": {
+    "user_detected": "⚠️ <b>User with ban history detected</b>\n\nUser: {{username}}\nRegistered bans: {{count}}\n\nAdmins can check the reasons below.",
+    "view_reasons": "🔍 View reasons",
+    "ban_user": "🔨 Ban user",
+    "ignore": "✅ Ignore",
+    "history_title": "Ban history for {{userId}}:",
+    "history_item": "\nGroup: {{groupName}}\nReason: {{reason}}\nMessage: \"{{messageText}}\"\nData: {{date}}",
+    "admin_only_button": "Only administrators can use this button.",
+    "confirmed_ban": "✅ User {{name}} banned and alert removed."
   }
 }

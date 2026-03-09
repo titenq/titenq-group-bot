@@ -1,8 +1,10 @@
 import { Composer } from "telegraf";
+import { message } from "telegraf/filters";
 
-import { upsertGroupData } from "../db";
+import { getGlobalBanCount, upsertGroupData } from "../db";
 import { GroupMemberStatus } from "../enums/group-member-status";
 import { BotContext } from "../interfaces/bot-context";
+import { globalBanAlertMarkup } from "../markups/global-ban-alert";
 
 export const groupEventHandlers = new Composer<BotContext>();
 
@@ -20,6 +22,32 @@ groupEventHandlers.on("my_chat_member", async (ctx) => {
   const inviterId = ctx.from?.id;
 
   await upsertGroupData(ctx.db, chatId, title, inviterId, undefined, isActive);
+});
+
+groupEventHandlers.on(message("new_chat_members"), async (ctx) => {
+  const newMembers = ctx.message.new_chat_members;
+
+  for (const member of newMembers) {
+    if (member.is_bot) {
+      continue;
+    }
+
+    const banCount = await getGlobalBanCount(ctx.db, member.id);
+
+    if (banCount > 0) {
+      const username = member.username
+        ? `@${member.username}`
+        : member.first_name;
+
+      await ctx.reply(
+        ctx.t("global_ban.user_detected", {
+          username,
+          count: banCount,
+        }),
+        globalBanAlertMarkup(ctx.t, member.id),
+      );
+    }
+  }
 });
 
 groupEventHandlers.on("message", async (ctx, next) => {
@@ -70,7 +98,9 @@ groupEventHandlers.on("message", async (ctx, next) => {
         }
       } catch (error) {
         console.error(
-          `[GroupEvents] Failed to migrate chat data: ${error instanceof Error ? error.message : "unknown error"}`,
+          `[GroupEvents] Failed to migrate chat data: ${
+            error instanceof Error ? error.message : "unknown error"
+          }`,
         );
       }
     }

@@ -2,10 +2,11 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import {
+  addGlobalBan,
   addVote,
-  updateVoteCaseStatus,
-  upsertVoteCase,
   getUserTrustWeight,
+  upsertVoteCase,
+  updateVoteCaseStatus,
 } from "../db";
 import { SnapshotType } from "../enums/snapshot";
 import { VoteCaseStatus } from "../enums/vote-case-status";
@@ -13,7 +14,6 @@ import { caseKey } from "../helpers/case-key";
 import { getMessageSnapshot } from "../helpers/get-message-snapshot";
 import { isAdmin } from "../helpers/is-admin";
 import { isGroup } from "../helpers/is-group";
-import { normalize } from "../helpers/normalize";
 import { safeDelete } from "../helpers/safe-delete";
 import { upsertVoteStatusMessage } from "../helpers/upsert-vote-status-message";
 import { TargetUser, VoteCase } from "../interfaces/bot";
@@ -33,12 +33,17 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
     return;
   }
 
-  const text = normalize(incomingMessage.text);
+  const rawText = incomingMessage.text.trim();
+  const [commandToken, ...reasonParts] = rawText.split(/\s+/);
+  const normalizedCommand = (commandToken ?? "").toLowerCase();
+  const normalizedBanKeyword = ctx.banKeyword.toLowerCase();
 
-  if (text !== normalize(ctx.banKeyword)) {
+  if (normalizedCommand !== normalizedBanKeyword) {
     return;
   }
 
+  const reasonText = reasonParts.join(" ").trim();
+  const reason = reasonText ? reasonText.slice(0, 120) : null;
   const reply = incomingMessage.reply_to_message;
 
   if (!reply || !("from" in reply) || !reply.from) {
@@ -60,6 +65,52 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const targetMessageId = reply.message_id;
   const key = caseKey(chatId, targetMessageId);
   const voterId = incomingMessage.from.id;
+  const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
+  const isAdminUser = isAdmin(voterMember);
+
+  if (isAdminUser) {
+    try {
+      await ctx.telegram.banChatMember(chatId, targetUser.id);
+    } catch (error) {
+      console.error(
+        `Failed to ban user ${targetUser.id} by admin: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+      
+      await ctx.reply(ctx.t("admin.ban_failed"));
+
+      return;
+    }
+
+    try {
+      await addGlobalBan(ctx.db, {
+        user_id: targetUser.id,
+        username: targetUser.username || null,
+        group_id: chatId,
+        group_name: "title" in ctx.chat ? ctx.chat.title : "Unknown",
+        message_text: snapshot.content || snapshot.preview || null,
+        reason,
+        admin_id: voterId,
+      });
+    } catch (error) {
+      console.error(
+        `[Vote] Failed to persist global ban: ${
+          error instanceof Error ? error.message : "unknown error"
+        }`,
+      );
+    }
+
+    await ctx.reply(
+      ctx.t("admin.user_banned_by_admin", {
+        firstName: targetUser.firstName,
+        reason: reason || ctx.t("admin.no_reason_provided"),
+      }),
+    );
+    await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
+    await safeDelete(ctx.telegram, chatId, targetMessageId);
+
+    return;
+  }
+
   let current = ctx.voteCases.get(key);
 
   if (!current) {

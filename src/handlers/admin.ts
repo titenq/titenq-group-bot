@@ -1,7 +1,7 @@
 import { Composer } from "telegraf";
 import { callbackQuery } from "telegraf/filters";
 
-import { updateVoteCaseStatus } from "../db";
+import { addGlobalBan, updateVoteCaseStatus } from "../db";
 import { Action } from "../enums/action";
 import { VoteCaseStatus } from "../enums/vote-case-status";
 import { caseKey } from "../helpers/case-key";
@@ -17,11 +17,11 @@ import { previewDecisionMarkup } from "../markups/preview-decision";
 
 export const adminHandlers = new Composer<BotContext>();
 
-adminHandlers.on(callbackQuery("data"), async (ctx) => {
+adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
   const callback = ctx.callbackQuery;
 
   if (!callback.data) {
-    return;
+    return next();
   }
 
   const [action, rawChatId, rawMessageId, rawArg] = callback.data.split("|");
@@ -33,7 +33,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
     !rawArg ||
     !Object.values(Action).includes(action as Action)
   ) {
-    return;
+    return next();
   }
 
   const chatId = Number(rawChatId);
@@ -333,6 +333,8 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
   }
 
   const targetUserId = actionArg;
+  const groupName =
+    ctx.chat && "title" in ctx.chat ? ctx.chat.title : "Unknown";
   const decisionText =
     action === Action.ADMIN_BAN
       ? ctx.t("admin.word_banned")
@@ -358,6 +360,29 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
       });
 
       return;
+    }
+
+    if (voteCase) {
+      try {
+        await addGlobalBan(ctx.db, {
+          user_id: voteCase.targetUser.id,
+          username: voteCase.targetUser.username ?? null,
+          group_id: chatId,
+          group_name: groupName,
+          message_text:
+            voteCase.snapshotMessageContent ||
+            voteCase.snapshotMessagePreview ||
+            null,
+          reason: null,
+          admin_id: actorId,
+        });
+      } catch (error) {
+        console.error(
+          `[Admin] Failed to persist global ban: ${
+            error instanceof Error ? error.message : "unknown error"
+          }`,
+        );
+      }
     }
   }
 

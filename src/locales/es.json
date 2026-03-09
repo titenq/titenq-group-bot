@@ -11,6 +11,8 @@
     "faq_empty": "No hay FAQs registrados.",
     "faq_invalid_format": "Formato inválido o enlace inexistente. Usar: /faq palabra https://t.me/grupo/id",
     "faq_trigger_too_long": "Palabra clave demasiado larga. Máximo {{maxLength}} caracteres.",
+    "faq_trigger_reply_required": "Para mostrar un FAQ, responde a un mensaje con: /faq palabra",
+    "faq_not_found": "No se encontró ningún FAQ para '{{trigger}}'.",
     "faq_reply_message": "Consulta la respuesta aquí: {{link}}",
     "menu_title": "Comandos y Funcionalidades del Bot",
     "menu_moderation_title": "Moderación Comunitaria",
@@ -84,20 +86,23 @@
     "error_ban_failed_permissions": "Fallo al banear. Verifique permisos del bot.",
     "case_decided": "Caso {{decision}} por admin.",
     "word_banned": "BANEADO",
-    "word_ignored": "IGNORADO"
+    "word_ignored": "IGNORADO",
+    "user_banned_by_admin": "🔨 <b>{{firstName}}</b> fue baneado directamente por um administrador.\nMotivo: {{reason}}",
+    "ban_failed": "❌ Error al banear al usuario.",
+    "no_reason_provided": "No informado"
   },
   "markups": {
-    "view_content": "👁 Ver Contenido",
+    "view_content": "🖼️ Ver Contenido",
     "view_voters": "👥 Ver Votantes",
     "ban_user": "🔨 Banear Usuario",
     "ignore_report": "✅ Ignorar Reporte",
     "restore_message": "↩️ Restaurar Mensaje",
-    "delete_view": "🗑 Eliminar Vista",
+    "delete_view": "🗑️ Eliminar Vista",
     "keep_view": "💬 Mantener Mensaje"
   },
   "media": {
     "attribution": "Enviado por: {{authorName}}\nDe: {{chatTitle}}",
-    "success_posted": "📸 Medio publicado por {{authorName}} con éxito en la galería oficial.\n\n🔗 *[Acceder al Medio]({{postLink}})*",
+    "success_posted": "📸 Medio publicado por {{authorName}} con éxito en la galería oficial.\n\n🔗 <a href=\"{{postLink}}\">Acceder al Medio</a>",
     "error_forwarding": "❌ Ocurrió un error al enviar tu medio a nuestro Canal Galería. Revisa la consola del Bot."
   },
   "gist": {
@@ -119,5 +124,15 @@
     "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>) — peso de voto: {{weight}}",
     "user_placeholder": "Usuario",
     "unknown_user": "Desconocido"
+  },
+  "global_ban": {
+    "user_detected": "⚠️ <b>Usuario con historial de baneo detectado</b>\n\nUsuario: {{username}}\nBaneos registrados: {{count}}\n\nLos administradores podem verificar los motivos a continuación.",
+    "view_reasons": "🔍 Ver motivos",
+    "ban_user": "🔨 Banear usuario",
+    "ignore": "✅ Ignorar",
+    "history_title": "Historial de baneos de {{userId}}:",
+    "history_item": "\nGrupo: {{groupName}}\nMotivo: {{reason}}\nMensaje: \"{{messageText}}\"\nFecha: {{date}}",
+    "admin_only_button": "Solo los administradores pueden usar este botón.",
+    "confirmed_ban": "✅ Usuario {{name}} baneado y alerta eliminada."
   }
 }
