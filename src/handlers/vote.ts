@@ -5,7 +5,6 @@ import {
   addGlobalBan,
   addVote,
   getUserTrustWeight,
-  isGroupFeatureEnabled,
   upsertVoteCase,
   updateVoteCaseStatus,
 } from "../db";
@@ -16,6 +15,7 @@ import {
   caseKey,
   getMessageSnapshot,
   isAdmin,
+  isGroupFeatureEnabled,
   isGroup,
   safeDelete,
   upsertVoteStatusMessage,
@@ -46,9 +46,7 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
     return;
   }
 
-  if (
-    !(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.MODERATION))
-  ) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.MODERATION))) {
     return;
   }
 
@@ -115,7 +113,7 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
         reason: reason || ctx.t("admin.no_reason_provided"),
       }),
     );
-    
+
     await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
     await safeDelete(ctx.telegram, chatId, targetMessageId);
 

@@ -2,9 +2,13 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import { MEDIA_CHANNEL_TARGET } from "../config/env";
-import { isGroupFeatureEnabled } from "../db";
 import { GroupFeature } from "../enums/group-feature";
-import { isGroup, safeDelete, scheduleMessageCleanup } from "../helpers";
+import {
+  isGroup,
+  isGroupFeatureEnabled,
+  safeDelete,
+  scheduleMessageCleanup,
+} from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const mediaHandlers = new Composer<BotContext>();
@@ -22,7 +26,7 @@ mediaHandlers.on([message("photo"), message("video")], async (ctx, next) => {
     return next();
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.MEDIA))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.MEDIA))) {
     return;
   }
 

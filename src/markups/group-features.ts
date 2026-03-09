@@ -18,11 +18,11 @@ export const groupFeaturesMarkup = (
           const statusLabel = feature.isEnabled
             ? t("commands.features_status_on")
             : t("commands.features_status_off");
-          
+
           const featureLabel = t(
             `commands.features_feature_${feature.featureKey}`,
           );
-          
+
           const button = {
             text: `${featureLabel} ${statusIcon} ${statusLabel}`,
             callback_data: `features_toggle_${feature.featureKey}`,

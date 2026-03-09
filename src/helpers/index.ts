@@ -8,6 +8,7 @@ export { formatGroupDate } from "./format-group-date";
 export { formatVoterDisplay } from "./format-voter-display";
 export { getMessageSnapshot } from "./get-message-snapshot";
 export { isAdmin } from "./is-admin";
+export { isGroupFeatureEnabled } from "./is-group-feature-enabled";
 export { isGroup } from "./is-group";
 export { isSnapshotMediaType } from "./is-snapshot-media-type";
 export { LANGUAGE_EXTENSION_MAP } from "./language-extension-map";

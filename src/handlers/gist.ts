@@ -1,10 +1,10 @@
 import { Composer } from "telegraf";
 
 import { GITHUB_GIST_TOKEN } from "../config/env";
-import { isGroupFeatureEnabled } from "../db";
 import { GroupFeature } from "../enums/group-feature";
 import {
   createGist,
+  isGroupFeatureEnabled,
   isGroup,
   LANGUAGE_EXTENSION_MAP,
   safeDelete,
@@ -23,7 +23,7 @@ gistHandlers.command("gist", async (ctx, next) => {
     return next();
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.GIST))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.GIST))) {
     return;
   }
 

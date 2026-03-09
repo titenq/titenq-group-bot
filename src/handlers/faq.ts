@@ -3,13 +3,13 @@ import { Composer, Markup } from "telegraf";
 import { FAQ_TRIGGER_LENGTH } from "../config/env";
 import {
   getGroupFaq,
-  isGroupFeatureEnabled,
   listGroupFaqs,
   removeGroupFaq,
   upsertGroupFaq,
 } from "../db";
 import { GroupFeature } from "../enums/group-feature";
 import {
+  isGroupFeatureEnabled,
   isAdmin,
   normalize,
   safeDelete,
@@ -25,14 +25,16 @@ faqHandlers.command("faq", async (ctx) => {
     return;
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.FAQ))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.FAQ))) {
     return;
   }
 
   const fullText = ctx.message.text;
   const firstSpaceIndex = fullText.indexOf(" ");
+
   const argString =
     firstSpaceIndex === -1 ? "" : fullText.slice(firstSpaceIndex + 1);
+  
   const parts = argString.trim().split(" ").filter(Boolean);
 
   if (parts.length === 0) {
@@ -202,7 +204,7 @@ faqHandlers.command("faqs", async (ctx) => {
     return;
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.FAQ))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.FAQ))) {
     return;
   }
 

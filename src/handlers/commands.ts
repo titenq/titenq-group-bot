@@ -1,6 +1,6 @@
 import i18next from "i18next";
 import { Composer } from "telegraf";
-import { callbackQuery } from "telegraf/filters";
+import { callbackQuery, message } from "telegraf/filters";
 
 import { getGroupFeatures, toggleGroupFeature, upsertGroupData } from "../db";
 import { GROUP_FEATURES, GroupFeature } from "../enums/group-feature";
@@ -66,9 +66,16 @@ commandHandlers.help(async (ctx) => {
   );
 });
 
-commandHandlers.hears(/^\/[iíìĩî]18n(?:@[\w]+)?$/i, async (ctx) => {
+commandHandlers.on(message("text"), async (ctx, next) => {
   if (!ctx.chat || ctx.chat.type === "private") {
-    return;
+    return next();
+  }
+
+  const commandToken = ctx.message.text.trim().split(/\s+/)[0] ?? "";
+  const normalizedCommand = commandToken.split("@")[0].toLowerCase();
+
+  if (normalizedCommand !== "/i18n") {
+    return next();
   }
 
   const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
@@ -257,7 +264,7 @@ commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
   const featureLabel = ctx.t(
     `commands.features_feature_${updatedFeature.featureKey}`,
   );
-  
+
   const featureStatus = updatedFeature.isEnabled
     ? ctx.t("commands.features_status_on")
     : ctx.t("commands.features_status_off");

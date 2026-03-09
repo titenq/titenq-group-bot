@@ -1,9 +1,14 @@
 import { Composer } from "telegraf";
 
 import { VIP_MEMBER_TAG } from "../config/constants";
-import { addVip, isGroupFeatureEnabled, listVips, removeVip } from "../db";
+import { addVip, listVips, removeVip } from "../db";
 import { GroupFeature } from "../enums/group-feature";
-import { isAdmin, scheduleMessageCleanup, setChatMemberTag } from "../helpers";
+import {
+  isAdmin,
+  isGroupFeatureEnabled,
+  scheduleMessageCleanup,
+  setChatMemberTag,
+} from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const trustHandlers = new Composer<BotContext>();
@@ -70,7 +75,7 @@ trustHandlers.command("trust", async (ctx) => {
     return;
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.TRUST))) {
     return;
   }
 
@@ -151,7 +156,7 @@ trustHandlers.command("untrust", async (ctx) => {
     return;
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.TRUST))) {
     return;
   }
 
@@ -226,7 +231,7 @@ trustHandlers.command("trustlist", async (ctx) => {
     return;
   }
 
-  if (!(await isGroupFeatureEnabled(ctx.db, ctx.chat.id, GroupFeature.TRUST))) {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.TRUST))) {
     return;
   }
 
