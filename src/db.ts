@@ -113,11 +113,31 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
       user_id INTEGER NOT NULL,
       points INTEGER NOT NULL DEFAULT 0,
       is_vip BOOLEAN NOT NULL DEFAULT 0,
+      trust_weight INTEGER NOT NULL DEFAULT 1,
       added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (chat_id, user_id),
       FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
     );
   `);
+
+  try {
+    await db.exec(
+      "ALTER TABLE group_trust_points ADD COLUMN trust_weight INTEGER NOT NULL DEFAULT 1;",
+    );
+  } catch (error) {
+    if (
+      !(error instanceof Error) ||
+      !error.message.includes("duplicate column name")
+    ) {
+      console.error(
+        "[Database] Duplicate column name: trust_weight (Safe to ignore)",
+      );
+    } else {
+      console.error(
+        `[Database] Failed to add trust_weight column: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
 
   return db;
 };
@@ -608,19 +628,36 @@ export const isUserVip = async (
   return row?.is_vip === 1;
 };
 
+export const getUserTrustWeight = async (
+  db: BotDb,
+  chatId: number,
+  userId: number,
+): Promise<number> => {
+  const row = await db.get<{ trust_weight: number }>(
+    "SELECT trust_weight FROM group_trust_points WHERE chat_id = ? AND user_id = ? AND is_vip = 1",
+    chatId,
+    userId,
+  );
+
+  return row?.trust_weight ?? 1;
+};
+
 export const addVip = async (
   db: BotDb,
   chatId: number,
   userId: number,
+  weight = 1,
 ): Promise<void> => {
   await db.run(
     `
-      INSERT INTO group_trust_points (chat_id, user_id, is_vip)
-      VALUES (?, ?, 1)
-      ON CONFLICT(chat_id, user_id) DO UPDATE SET is_vip = 1
+      INSERT INTO group_trust_points (chat_id, user_id, is_vip, trust_weight)
+      VALUES (?, ?, 1, ?)
+      ON CONFLICT(chat_id, user_id) DO UPDATE SET is_vip = 1, trust_weight = ?
     `,
     chatId,
     userId,
+    weight,
+    weight,
   );
 };
 
@@ -630,7 +667,7 @@ export const removeVip = async (
   userId: number,
 ): Promise<boolean> => {
   const result = await db.run(
-    "UPDATE group_trust_points SET is_vip = 0 WHERE chat_id = ? AND user_id = ?",
+    "UPDATE group_trust_points SET is_vip = 0, trust_weight = 1 WHERE chat_id = ? AND user_id = ?",
     chatId,
     userId,
   );
@@ -641,9 +678,61 @@ export const removeVip = async (
 export const listVips = async (
   db: BotDb,
   chatId: number,
-): Promise<{ user_id: number; added_at: string }[]> => {
-  return db.all<{ user_id: number; added_at: string }[]>(
-    "SELECT user_id, added_at FROM group_trust_points WHERE chat_id = ? AND is_vip = 1 ORDER BY added_at DESC",
+): Promise<{ user_id: number; trust_weight: number; added_at: string }[]> => {
+  return db.all<{ user_id: number; trust_weight: number; added_at: string }[]>(
+    "SELECT user_id, trust_weight, added_at FROM group_trust_points WHERE chat_id = ? AND is_vip = 1 ORDER BY added_at DESC",
     chatId,
   );
+};
+
+export const migrateChatData = async (
+  db: BotDb,
+  oldChatId: number,
+  newChatId: number,
+): Promise<void> => {
+  await db.exec("BEGIN TRANSACTION;");
+
+  try {
+    await db.run(
+      `
+        INSERT OR IGNORE INTO groups (chat_id, title, language_code, added_by_user_id, added_at, is_active)
+        SELECT ?, title, language_code, added_by_user_id, added_at, is_active
+        FROM groups WHERE chat_id = ?
+      `,
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE vote_cases SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE voters SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE group_faqs SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE group_trust_points SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run("DELETE FROM groups WHERE chat_id = ?", oldChatId);
+
+    await db.exec("COMMIT;");
+  } catch (error) {
+    await db.exec("ROLLBACK;");
+
+    throw error;
+  }
 };

@@ -3,9 +3,9 @@ import { message } from "telegraf/filters";
 
 import {
   addVote,
-  isUserVip,
   updateVoteCaseStatus,
   upsertVoteCase,
+  getUserTrustWeight,
 } from "../db";
 import { SnapshotType } from "../enums/snapshot";
 import { VoteCaseStatus } from "../enums/vote-case-status";
@@ -107,15 +107,14 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
 
   await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
 
-  const isVip = await isUserVip(ctx.db, chatId, voterId);
+  if (!current.voters.has(voterId)) {
+    const weight = await getUserTrustWeight(ctx.db, chatId, voterId);
 
-  if (isVip) {
-    await ctx.reply(ctx.t("trust.vip_action_notify"), {
-      reply_parameters: { message_id: targetMessageId },
-      parse_mode: "HTML",
-    });
+    if (weight > 1) {
+      current.extraAdminVotes += weight - 1;
+    }
 
-    current.extraAdminVotes = ctx.requiredVotes;
+    current.voters.add(voterId);
   } else {
     const previousSize = current.voters.size;
 

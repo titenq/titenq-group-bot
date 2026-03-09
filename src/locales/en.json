@@ -30,6 +30,10 @@
     "menu_chat_create": "`/chat` — Creates a new private and temporary chat room.",
     "menu_chat_close": "`/chat close` — Closes the current room (creator only).",
     "menu_chat_exit": "`/chat exit` — Leaves the current room.",
+    "menu_trust_title": "Trusted Members (Trust)",
+    "menu_trust_add": "`/trust [ID] [weight]` — Sets a member as trusted and defines their vote weight for the {{banKeyword}} command (admins only). The weight must be between 1 and {{requiredVotes}}.",
+    "menu_trust_list": "`/trustlist` — Lists all trusted members and their respective vote weights (admins only).",
+    "menu_trust_remove": "`/untrust [ID]` — Removes trusted member status and resets weight to 1 (admins only).",
     "menu_auto_delete": "This message will be automatically deleted in 1 minute to keep the Group clean.",
     "temp_chat_created": "✅ Room <b>{{roomId}}</b> created!\n\nShare the link to invite participants.\n\n⏰ Expires in {{minutes}} minutes.",
     "temp_chat_btn_join": "Join the room",
@@ -106,13 +110,13 @@
   "trust": {
     "error_no_reply_or_id": "❌ Reply to a message or provide the user ID.",
     "error_invalid_id": "❌ Invalid user ID.",
-    "trust_success": "🛡️ <b>{{name}}</b> (<code>{{userId}}</code>) is now a trusted member (VIP) of this group!",
+    "error_invalid_weight": "❌ Invalid weight. The weight must be a number between 1 and {{requiredVotes}}.",
+    "trust_success": "🛡️ <b>{{name}}</b> (<code>{{userId}}</code>) is now a trusted member of this group with vote weight <b>{{weight}}</b>!",
     "untrust_success": "➖ <b>{{name}}</b> (<code>{{userId}}</code>) removed from the trusted members list.",
     "untrust_not_found": "ℹ️ This user is not in the VIP list.",
     "trust_list_title": "🛡️ <b>Trusted Members (VIPs):</b>",
     "trust_list_empty": "No VIP members registered.",
-    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>)",
-    "vip_action_notify": "⚡ <b>VIP Instant Action:</b> A trusted member reported this message. Removing immediately...",
+    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>) — vote weight: {{weight}}",
     "user_placeholder": "User",
     "unknown_user": "Unknown"
   }

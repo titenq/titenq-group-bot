@@ -30,7 +30,7 @@ commandHandlers.help(async (ctx) => {
 });
 
 commandHandlers.hears(/^\/[iíìĩî]18n(?:@[\w]+)?$/i, async (ctx) => {
-  if (!ctx.chat) {
+  if (!ctx.chat || ctx.chat.type === "private") {
     return;
   }
 
@@ -46,7 +46,7 @@ commandHandlers.hears(/^\/[iíìĩî]18n(?:@[\w]+)?$/i, async (ctx) => {
 });
 
 commandHandlers.action(/^i18n_set_(.+)$/, async (ctx) => {
-  if (!ctx.chat) {
+  if (!ctx.chat || ctx.chat.type === "private") {
     return;
   }
 
@@ -122,6 +122,11 @@ commandHandlers.command("menu", async (ctx) => {
     ctx.t("commands.menu_chat_create"),
     ctx.t("commands.menu_chat_close"),
     ctx.t("commands.menu_chat_exit"),
+    "",
+    `🛡 *${ctx.t("commands.menu_trust_title")}*`,
+    ctx.t("commands.menu_trust_add", { banKeyword, requiredVotes }),
+    ctx.t("commands.menu_trust_list"),
+    ctx.t("commands.menu_trust_remove"),
     "",
     "",
     `*${ctx.t("commands.menu_auto_delete")}*`,

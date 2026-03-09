@@ -30,6 +30,10 @@
     "menu_chat_create": "`/chat` — Crea una nueva sala de chat privada y temporal.",
     "menu_chat_close": "`/chat close` — Cierra la sala actual (solo quien la creó).",
     "menu_chat_exit": "`/chat exit` — Sale de la sala actual.",
+    "menu_trust_title": "Miembros de Confianza (Trust)",
+    "menu_trust_add": "`/trust [ID] [peso]` — Define a un miembro como confiable y el peso de su voto en el comando {{banKeyword}} (solo admins). El peso debe ser de 1 a {{requiredVotes}}.",
+    "menu_trust_list": "`/trustlist` — Lista todos los miembros confiables y sus respectivos pesos de los votos (solo admins).",
+    "menu_trust_remove": "`/untrust [ID]` — Elimina el estatus de miembro confiable y resetea el peso a 1 (solo admins).",
     "menu_auto_delete": "Este mensaje se eliminará automáticamente en 1 minuto para no contaminar el Grupo.",
     "temp_chat_created": "✅ Sala <b>{{roomId}}</b> creada!\n\nComparte el enlace para invitar participantes.\n\n⏰ Expira en {{minutes}} minutos.",
     "temp_chat_btn_join": "Entrar a la sala",
@@ -106,13 +110,13 @@
   "trust": {
     "error_no_reply_or_id": "❌ Responde a un mensaje o informa el ID del usuario.",
     "error_invalid_id": "❌ ID de usuario inválido.",
-    "trust_success": "🛡️ ¡<b>{{name}}</b> (<code>{{userId}}</code>) ahora es un miembro de confianza (VIP) de este grupo!",
+    "error_invalid_weight": "❌ Peso inválido. El peso debe ser un número entre 1 e {{requiredVotes}}.",
+    "trust_success": "🛡️ ¡<b>{{name}}</b> (<code>{{userId}}</code>) ahora es un miembro de confianza de este grupo con peso de voto <b>{{weight}}</b>!",
     "untrust_success": "➖ <b>{{name}}</b> (<code>{{userId}}</code>) removido de la lista de miembros de confianza.",
     "untrust_not_found": "ℹ️ Este usuario no está en la lista VIP.",
     "trust_list_title": "🛡️ <b>Miembros de Confianza (VIPs):</b>",
     "trust_list_empty": "Ningún miembro VIP registrado.",
-    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>)",
-    "vip_action_notify": "⚡ <b>Acción Instantánea VIP:</b> Un miembro de confianza reportó este mensaje. Eliminando inmediatamente...",
+    "trust_list_item": "• <b>{{name}}</b> (<code>{{userId}}</code>) — peso de voto: {{weight}}",
     "user_placeholder": "Usuario",
     "unknown_user": "Desconocido"
   }

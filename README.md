@@ -39,6 +39,9 @@ Built with **TypeScript** foundations and modern code standards (`ESNext`), the 
 - **Temporary Private Rooms (NEW)**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
 
 - **Resilient Persistence**: Voting sessions and infraction snapshots are persisted in SQLite — zero data loss on restart.
+- **Group Migration Protection (NEW)**: Automatically detects when a group chat is upgraded to a supergroup. Migrates all settings, FAQs, and active voting cases to the new Chat ID seamlessly.
+
+- **Trust Weight System (NEW)**: Admins can assign specific "vote weights" to trusted members. A trusted member's vote counts as multiple votes, allowing for faster moderation.
 
 - **Architecture by Design**: Clear separation between Persistence (`db.ts`), Handlers, and Atomic Logic (`helpers/`), with strict typing and integrated Oxc/Prettier linting.
 
@@ -179,8 +182,13 @@ Any member can type `/menu` in the group to get an instant summary of all availa
 
 🚫 Moderação Comunitária
 Responda qualquer mensagem com ban para iniciar uma votação de remoção.
-Ao atingir 2 votos, a mensagem é removida, o usuário suspeito é
+Ao atingir 10 votos (valor padrão), a mensagem é removida, o usuário suspeito é
 silenciado e os admins são notificados.
+
+⚖️ Sistema de Confiança (Admins)
+/trust [ID] [peso] — Define um membro como confiável e o peso do seu voto (1 a 10).
+/untrust [ID] — Remove o status de membro confiável e reseta o peso para 1.
+/trustlist — Lista todos os membros confiáveis e seus respectivos pesos de voto.
 
 📚 FAQs Dinâmicos
 /faq palavra link — Cadastra uma resposta rápida (apenas admins).
@@ -228,6 +236,18 @@ The core feature of the bot is the community-driven moderation flow to handle sp
    - `View voters` (Auditing).
    - `Ban user` (Definitive Action: **The bot will ONLY ban a user if an Admin explicitly clicks this button**).
    - `Ignore / Restore` (Retraction in case of a false positive, returning the message to the chat and **instantly unmuting** the user).
+
+---
+
+## ⚖️ Trust & Weighted Voting
+
+Admins can delegate moderation power to trusted members by increasing their vote weight.
+
+- **Set Trust**: `/trust [ID] [weight]`. The `weight` must be between 1 and the `REQUIRED_VOTES` limit. If no weight is provided, it defaults to the full requirement (instant action).
+- **Reset Trust**: `/untrust [ID]` removes the VIP status and resets the weight back to 1.
+- **List Trusted Members**: `/trustlist` shows all members who have a special vote weight in the group.
+
+All trust-related error messages (invalid weight, user not found) and command calls are automatically deleted after 1 minute to keep the group history clean.
 
 ---
 
