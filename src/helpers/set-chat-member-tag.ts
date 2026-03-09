@@ -1,9 +1,6 @@
 import { Telegram } from "telegraf";
 
-import {
-  SetChatMemberTagCallApi,
-  SetChatMemberTagParams,
-} from "../interfaces/set-chat-member-tag";
+import { SetChatMemberTagCallApi, SetChatMemberTagParams } from "../interfaces";
 
 export const setChatMemberTag = async ({
   chatId,

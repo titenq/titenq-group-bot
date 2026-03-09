@@ -1,9 +1,5 @@
 import { buildSnapshotMediaCaption } from "./build-snapshot-media-caption";
-import {
-  MediaSendFn,
-  SnapshotMediaHandlerMap,
-  VoteCase,
-} from "../interfaces/bot";
+import { MediaSendFn, SnapshotMediaHandlerMap, VoteCase } from "../interfaces";
 import { isSnapshotMediaType } from "./is-snapshot-media-type";
 
 export const sendSnapshotMedia = async (

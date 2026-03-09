@@ -16,7 +16,7 @@ import {
   scheduleMessageCleanup,
   validateTelegramLink,
 } from "../helpers";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 
 export const faqHandlers = new Composer<BotContext>();
 

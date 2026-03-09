@@ -18,8 +18,7 @@ import {
   safeDelete,
   upsertVoteStatusMessage,
 } from "../helpers";
-import { TargetUser, VoteCase } from "../interfaces/bot";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext, TargetUser, VoteCase } from "../interfaces";
 import { adminDecisionMarkup } from "../markups/admin-decision";
 
 export const voteHandlers = new Composer<BotContext>();

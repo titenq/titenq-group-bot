@@ -3,7 +3,7 @@ import { Composer } from "telegraf";
 import { addGlobalBan, getGlobalBanHistory } from "../db";
 import { Action } from "../enums";
 import { formatGroupDate, isAdmin, safeDelete, truncateText } from "../helpers";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 
 export const globalBanActions = new Composer<BotContext>();
 

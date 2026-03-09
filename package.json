@@ -15,7 +15,8 @@
     "type-check:scripts": "tsc -p tsconfig.scripts.json --noEmit",
     "generate:helpers": "tsx scripts/generate-barrel.ts src/helpers",
     "generate:enums": "tsx scripts/generate-barrel.ts src/enums",
-    "generate:barrels": "npm run generate:helpers && npm run generate:enums"
+    "generate:interfaces": "tsx scripts/generate-barrel.ts src/interfaces",
+    "generate:barrels": "npm run generate:helpers && npm run generate:enums && npm run generate:interfaces"
   },
   "keywords": [
     "telegram",

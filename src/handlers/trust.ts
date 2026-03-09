@@ -9,7 +9,7 @@ import {
   scheduleMessageCleanup,
   setChatMemberTag,
 } from "../helpers";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 
 export const trustHandlers = new Composer<BotContext>();
 

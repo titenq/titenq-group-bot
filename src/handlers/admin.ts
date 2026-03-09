@@ -13,7 +13,7 @@ import {
   sendSnapshotMedia,
   truncateText,
 } from "../helpers";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 import { previewDecisionMarkup } from "../markups/preview-decision";
 
 export const adminHandlers = new Composer<BotContext>();

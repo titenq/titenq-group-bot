@@ -1,6 +1,6 @@
 import { Telegram } from "telegraf";
 
-import { MediaSendFn, SnapshotMediaHandlerMap } from "../interfaces/bot";
+import { MediaSendFn, SnapshotMediaHandlerMap } from "../interfaces";
 
 export const createMediaSenders = (
   telegram: Telegram,

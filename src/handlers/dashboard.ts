@@ -2,7 +2,7 @@ import { Composer } from "telegraf";
 
 import { BOT_OWNER_ID } from "../config/env";
 import { getDashboardStats } from "../db";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 
 const LANG_FLAG: Record<string, string> = {
   pt: "🇧🇷",

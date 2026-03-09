@@ -1,6 +1,6 @@
 import { caseKey } from "./case-key";
 import { BotDb, loadOpenCases } from "../db";
-import { VoteCase } from "../interfaces/bot";
+import { VoteCase } from "../interfaces";
 import { normalizeSnapshotType } from "./normalize-snapshot-type";
 
 export const loadCasesFromDb = async (

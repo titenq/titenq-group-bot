@@ -6,7 +6,7 @@ import { dashboardHandlers } from "./dashboard";
 import { faqHandlers } from "./faq";
 import { gistHandlers } from "./gist";
 import { groupEventHandlers } from "./group-events";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 import { mediaHandlers } from "./media";
 import { tempChatHandlers } from "./temp-chat";
 import { trustHandlers } from "./trust";

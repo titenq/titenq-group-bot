@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import { Telegram } from "telegraf";
 
-import { QueueJob } from "../interfaces/queue-job";
+import { QueueJob } from "../interfaces";
 
 const BATCH_SIZE = 20;
 const INTERVAL_MS = 1000;

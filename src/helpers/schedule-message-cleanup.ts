@@ -1,5 +1,5 @@
 import { FAQ_ERROR_TTL_MS } from "../config/env";
-import { ScheduleMessageCleanupParams } from "../interfaces/schedule-message-cleanup";
+import { ScheduleMessageCleanupParams } from "../interfaces";
 import { safeDelete } from "./safe-delete";
 
 export const scheduleMessageCleanup = ({

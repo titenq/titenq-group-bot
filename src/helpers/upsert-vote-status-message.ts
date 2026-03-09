@@ -2,7 +2,7 @@ import { TFunction } from "i18next";
 import { Telegram } from "telegraf";
 
 import { BotDb, updateVoteStatusMessageId } from "../db";
-import { VoteCase } from "../interfaces/bot";
+import { VoteCase } from "../interfaces";
 import { safeDelete } from "./safe-delete";
 
 export const upsertVoteStatusMessage = async (

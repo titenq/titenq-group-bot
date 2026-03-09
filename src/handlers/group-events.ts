@@ -3,7 +3,7 @@ import { message } from "telegraf/filters";
 
 import { getGlobalBanCount, upsertGroupData } from "../db";
 import { GroupMemberStatus } from "../enums";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 import { globalBanAlertMarkup } from "../markups/global-ban-alert";
 
 export const groupEventHandlers = new Composer<BotContext>();

@@ -16,9 +16,12 @@ import {
   removeRoomParticipant,
 } from "../db";
 import { CloseRoomResult, JoinRoomResult, LeaveRoomResult } from "../enums";
-import { PersistedRoom } from "../interfaces/db";
-import { MessageQueueService } from "../interfaces/message-queue";
-import { Room, UserRateLimit } from "../interfaces/room";
+import {
+  MessageQueueService,
+  PersistedRoom,
+  Room,
+  UserRateLimit,
+} from "../interfaces";
 
 export const createTempChatService = (
   telegram: Telegram,

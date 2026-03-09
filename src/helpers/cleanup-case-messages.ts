@@ -1,6 +1,6 @@
 import { Telegram } from "telegraf";
 
-import { VoteCase } from "../interfaces/bot";
+import { VoteCase } from "../interfaces";
 import { safeDelete } from "./safe-delete";
 
 export const cleanupCaseMessages = async (

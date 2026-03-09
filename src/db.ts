@@ -6,18 +6,19 @@ import sqlite3 from "sqlite3";
 
 import { LANGUAGE } from "./config/env";
 import { GROUP_FEATURES, GroupFeature, VoteCaseStatus } from "./enums";
-import { DashboardStats } from "./interfaces/dashboard";
-import { GlobalBan, GlobalBanHistoryRow } from "./interfaces/global-ban";
-import { GroupFeatureState } from "./interfaces/group-feature";
 import {
+  DashboardStats,
+  GlobalBan,
+  GlobalBanHistoryRow,
   GroupFeatureRow,
+  GroupFeatureState,
   OpenCaseRow,
   PersistedFaq,
   PersistedGroup,
   PersistedRoom,
   PersistedRoomRow,
   PersistedVoteCase,
-} from "./interfaces/db";
+} from "./interfaces";
 
 export type BotDb = Database;
 

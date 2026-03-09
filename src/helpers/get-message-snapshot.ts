@@ -5,7 +5,7 @@ import {
   MAX_SNAPSHOT_PREVIEW,
 } from "../config/constants";
 import { SnapshotCaptionMediaType, SnapshotType } from "../enums";
-import { MessageSnapshot } from "../interfaces/bot";
+import { MessageSnapshot } from "../interfaces";
 import { truncateText } from "./truncate-text";
 
 export const getMessageSnapshot = (message: Message): MessageSnapshot => {

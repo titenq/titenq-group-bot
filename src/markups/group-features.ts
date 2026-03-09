@@ -1,7 +1,7 @@
 import { TFunction } from "i18next";
 import { InlineKeyboardMarkup } from "telegraf/types";
 
-import { GroupFeatureState } from "../interfaces/group-feature";
+import { GroupFeatureState } from "../interfaces";
 
 export const groupFeaturesMarkup = (
   t: TFunction,

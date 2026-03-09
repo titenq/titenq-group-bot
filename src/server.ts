@@ -14,8 +14,7 @@ import { initDatabase, loadGroups, loadActiveRooms } from "./db";
 import { rootHandler } from "./handlers";
 import { createMediaSenders, loadCasesFromDb } from "./helpers";
 import { initI18n } from "./i18n";
-import { VoteCase } from "./interfaces/bot";
-import { BotContext } from "./interfaces/bot-context";
+import { BotContext, VoteCase } from "./interfaces";
 import { createMessageQueueService } from "./services/message-queue.service";
 import { createTempChatService } from "./services/temp-chat.service";
 

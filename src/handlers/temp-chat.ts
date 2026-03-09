@@ -3,7 +3,7 @@ import { Message } from "telegraf/types";
 
 import { BOT_OWNER_ID, MAX_MESSAGES_PER_10_SECONDS } from "../config/env";
 import { CloseRoomResult, JoinRoomResult, LeaveRoomResult } from "../enums";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 import { tempChatInviteMarkup } from "../markups/temp-chat-invite";
 
 export const tempChatHandlers = new Composer<BotContext>();

@@ -1,4 +1,4 @@
-import { GistApiResponse, GistCreatedResponse } from "../interfaces/gist";
+import { GistApiResponse, GistCreatedResponse } from "../interfaces";
 
 export const createGist = async (
   token: string,

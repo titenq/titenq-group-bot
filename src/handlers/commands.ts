@@ -6,7 +6,7 @@ import { getGroupFeatures, toggleGroupFeature, upsertGroupData } from "../db";
 import { GROUP_FEATURES, GroupFeature } from "../enums";
 import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
-import { BotContext } from "../interfaces/bot-context";
+import { BotContext } from "../interfaces";
 import { groupFeaturesMarkup } from "../markups/group-features";
 import { i18nOptionsMarkup } from "../markups/i18n-options";
 
