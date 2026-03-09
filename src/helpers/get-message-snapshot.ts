@@ -4,7 +4,7 @@ import {
   MAX_SNAPSHOT_CONTENT,
   MAX_SNAPSHOT_PREVIEW,
 } from "../config/constants";
-import { SnapshotType, SnapshotCaptionMediaType } from "../enums/snapshot";
+import { SnapshotCaptionMediaType, SnapshotType } from "../enums";
 import { MessageSnapshot } from "../interfaces/bot";
 import { truncateText } from "./truncate-text";
 

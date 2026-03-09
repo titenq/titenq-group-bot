@@ -1,7 +1,7 @@
 import { Markup } from "telegraf";
 import { InlineKeyboardMarkup } from "telegraf/types";
 
-import { Action } from "../enums/action";
+import { Action } from "../enums";
 
 export const globalBanAlertMarkup = (
   t: (key: string) => string,

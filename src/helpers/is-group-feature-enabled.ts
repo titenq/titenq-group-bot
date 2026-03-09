@@ -1,5 +1,5 @@
 import { isGroupFeatureEnabled as isGroupFeatureEnabledByChat } from "../db";
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 import { BotContext } from "../interfaces/bot-context";
 
 export const isGroupFeatureEnabled = async (

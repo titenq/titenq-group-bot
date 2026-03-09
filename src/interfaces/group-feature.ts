@@ -1,4 +1,4 @@
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 
 export interface GroupFeatureState {
   featureKey: GroupFeature;

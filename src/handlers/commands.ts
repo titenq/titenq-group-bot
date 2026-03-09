@@ -3,7 +3,7 @@ import { Composer } from "telegraf";
 import { callbackQuery, message } from "telegraf/filters";
 
 import { getGroupFeatures, toggleGroupFeature, upsertGroupData } from "../db";
-import { GROUP_FEATURES, GroupFeature } from "../enums/group-feature";
+import { GROUP_FEATURES, GroupFeature } from "../enums";
 import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 import { BotContext } from "../interfaces/bot-context";

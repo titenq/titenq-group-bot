@@ -9,7 +9,7 @@ import {
   DB_PATH,
   REQUIRED_VOTES,
 } from "./config/env";
-import { Language } from "./enums/language";
+import { Language } from "./enums";
 import { initDatabase, loadGroups, loadActiveRooms } from "./db";
 import { rootHandler } from "./handlers";
 import { createMediaSenders, loadCasesFromDb } from "./helpers";

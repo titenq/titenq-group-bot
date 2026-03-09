@@ -8,9 +8,7 @@ import {
   upsertVoteCase,
   updateVoteCaseStatus,
 } from "../db";
-import { GroupFeature } from "../enums/group-feature";
-import { SnapshotType } from "../enums/snapshot";
-import { VoteCaseStatus } from "../enums/vote-case-status";
+import { GroupFeature, SnapshotType, VoteCaseStatus } from "../enums";
 import {
   caseKey,
   getMessageSnapshot,

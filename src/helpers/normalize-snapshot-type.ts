@@ -1,5 +1,5 @@
 import { SNAPSHOT_TYPES } from "../config/constants";
-import { SnapshotType } from "../enums/snapshot";
+import { SnapshotType } from "../enums";
 
 export const normalizeSnapshotType = (value: string): SnapshotType => {
   return SNAPSHOT_TYPES.includes(value as SnapshotType)

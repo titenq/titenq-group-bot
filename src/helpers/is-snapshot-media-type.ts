@@ -1,5 +1,5 @@
 import { RESTORABLE_MEDIA_TYPES } from "../config/constants";
-import { SnapshotMediaType, SnapshotType } from "../enums/snapshot";
+import { SnapshotMediaType, SnapshotType } from "../enums";
 
 export const isSnapshotMediaType = (
   type: SnapshotType,

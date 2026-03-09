@@ -2,8 +2,7 @@ import { Composer } from "telegraf";
 import { callbackQuery } from "telegraf/filters";
 
 import { addGlobalBan, updateVoteCaseStatus } from "../db";
-import { Action } from "../enums/action";
-import { VoteCaseStatus } from "../enums/vote-case-status";
+import { Action, VoteCaseStatus } from "../enums";
 import {
   caseKey,
   cleanupCaseMessages,

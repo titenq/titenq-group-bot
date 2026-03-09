@@ -1,7 +1,7 @@
 import { Composer } from "telegraf";
 
 import { GITHUB_GIST_TOKEN } from "../config/env";
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 import {
   createGist,
   isGroupFeatureEnabled,

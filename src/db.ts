@@ -5,8 +5,7 @@ import { Database, open } from "sqlite";
 import sqlite3 from "sqlite3";
 
 import { LANGUAGE } from "./config/env";
-import { GROUP_FEATURES, GroupFeature } from "./enums/group-feature";
-import { VoteCaseStatus } from "./enums/vote-case-status";
+import { GROUP_FEATURES, GroupFeature, VoteCaseStatus } from "./enums";
 import { DashboardStats } from "./interfaces/dashboard";
 import { GlobalBan, GlobalBanHistoryRow } from "./interfaces/global-ban";
 import { GroupFeatureState } from "./interfaces/group-feature";

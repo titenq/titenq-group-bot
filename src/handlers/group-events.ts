@@ -2,7 +2,7 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import { getGlobalBanCount, upsertGroupData } from "../db";
-import { GroupMemberStatus } from "../enums/group-member-status";
+import { GroupMemberStatus } from "../enums";
 import { BotContext } from "../interfaces/bot-context";
 import { globalBanAlertMarkup } from "../markups/global-ban-alert";
 

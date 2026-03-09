@@ -1,7 +1,7 @@
 import i18next from "i18next";
 
 import { LANGUAGE } from "./config/env";
-import { Language } from "./enums/language";
+import { Language } from "./enums";
 
 import en from "./locales/en.json" with { type: "json" };
 import es from "./locales/es.json" with { type: "json" };

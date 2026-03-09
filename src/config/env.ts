@@ -1,6 +1,6 @@
 import { loadEnvFile } from "node:process";
 
-import { Language } from "../enums/language";
+import { Language } from "../enums";
 
 try {
   loadEnvFile();

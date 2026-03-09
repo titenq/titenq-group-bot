@@ -2,7 +2,7 @@ import { Composer } from "telegraf";
 
 import { VIP_MEMBER_TAG } from "../config/constants";
 import { addVip, listVips, removeVip } from "../db";
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 import {
   isAdmin,
   isGroupFeatureEnabled,

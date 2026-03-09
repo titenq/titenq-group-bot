@@ -15,9 +15,7 @@ import {
   insertRoom,
   removeRoomParticipant,
 } from "../db";
-import { CloseRoomResult } from "../enums/close-room-result";
-import { JoinRoomResult } from "../enums/join-room-result";
-import { LeaveRoomResult } from "../enums/leave-room-result";
+import { CloseRoomResult, JoinRoomResult, LeaveRoomResult } from "../enums";
 import { PersistedRoom } from "../interfaces/db";
 import { MessageQueueService } from "../interfaces/message-queue";
 import { Room, UserRateLimit } from "../interfaces/room";

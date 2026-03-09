@@ -2,9 +2,7 @@ import { Composer } from "telegraf";
 import { Message } from "telegraf/types";
 
 import { BOT_OWNER_ID, MAX_MESSAGES_PER_10_SECONDS } from "../config/env";
-import { CloseRoomResult } from "../enums/close-room-result";
-import { JoinRoomResult } from "../enums/join-room-result";
-import { LeaveRoomResult } from "../enums/leave-room-result";
+import { CloseRoomResult, JoinRoomResult, LeaveRoomResult } from "../enums";
 import { BotContext } from "../interfaces/bot-context";
 import { tempChatInviteMarkup } from "../markups/temp-chat-invite";
 

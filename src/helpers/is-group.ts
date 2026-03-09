@@ -1,4 +1,4 @@
-import { GroupChatType } from "../enums/group-chat-type";
+import { GroupChatType } from "../enums";
 
 export const isGroup = (chatType: string): boolean => {
   return (

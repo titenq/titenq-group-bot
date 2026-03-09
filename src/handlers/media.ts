@@ -2,7 +2,7 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import { MEDIA_CHANNEL_TARGET } from "../config/env";
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 import {
   isGroup,
   isGroupFeatureEnabled,

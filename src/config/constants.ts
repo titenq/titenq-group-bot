@@ -1,4 +1,4 @@
-import { SnapshotMediaType, SnapshotType } from "../enums/snapshot";
+import { SnapshotMediaType, SnapshotType } from "../enums";
 
 export const MAX_SNAPSHOT_PREVIEW = 300;
 export const MAX_SNAPSHOT_CONTENT = 3500;

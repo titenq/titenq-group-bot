@@ -1,7 +1,7 @@
 import { TFunction } from "i18next";
 import { Markup } from "telegraf";
 
-import { Action } from "../enums/action";
+import { Action } from "../enums";
 
 export const adminDecisionMarkup = (
   t: TFunction,

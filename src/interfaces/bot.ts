@@ -1,5 +1,4 @@
-import { SnapshotType } from "../enums/snapshot";
-import { VoteCaseStatus } from "../enums/vote-case-status";
+import { SnapshotType, VoteCaseStatus } from "../enums";
 
 export interface TargetUser {
   id: number;

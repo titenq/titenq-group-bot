@@ -7,7 +7,7 @@ import {
   removeGroupFaq,
   upsertGroupFaq,
 } from "../db";
-import { GroupFeature } from "../enums/group-feature";
+import { GroupFeature } from "../enums";
 import {
   isGroupFeatureEnabled,
   isAdmin,
@@ -34,7 +34,7 @@ faqHandlers.command("faq", async (ctx) => {
 
   const argString =
     firstSpaceIndex === -1 ? "" : fullText.slice(firstSpaceIndex + 1);
-  
+
   const parts = argString.trim().split(" ").filter(Boolean);
 
   if (parts.length === 0) {

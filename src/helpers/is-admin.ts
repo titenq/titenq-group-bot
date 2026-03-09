@@ -1,6 +1,6 @@
 import { ChatMember } from "telegraf/types";
 
-import { AdminMemberStatus } from "../enums/admin-member-status";
+import { AdminMemberStatus } from "../enums";
 
 export const isAdmin = (member: ChatMember): boolean => {
   return (

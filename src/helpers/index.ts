@@ -1,4 +1,3 @@
-// Auto-generated file. Do not edit manually.
 export { buildSnapshotMediaCaption } from "./build-snapshot-media-caption";
 export { caseKey } from "./case-key";
 export { cleanupCaseMessages } from "./cleanup-case-messages";

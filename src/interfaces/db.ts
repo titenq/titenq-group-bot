@@ -1,4 +1,4 @@
-import { VoteCaseStatus } from "../enums/vote-case-status";
+import { VoteCaseStatus } from "../enums";
 
 export interface PersistedRoom {
   id: string;

@@ -1,4 +1,4 @@
-import { Language } from "../enums/language";
+import { Language } from "../enums";
 
 const LANGUAGE_LOCALE_MAP: Record<Language, string> = {
   [Language.PT]: "pt-BR",
