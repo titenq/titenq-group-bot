@@ -1,9 +1,8 @@
 import { Composer } from "telegraf";
 
-import { FAQ_ERROR_TTL_MS } from "../config/env";
+import { VIP_MEMBER_TAG } from "../config/constants";
 import { addVip, listVips, removeVip } from "../db";
-import { isAdmin } from "../helpers/is-admin";
-import { safeDelete } from "../helpers/safe-delete";
+import { isAdmin, scheduleMessageCleanup, setChatMemberTag } from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const trustHandlers = new Composer<BotContext>();
@@ -73,7 +72,14 @@ trustHandlers.command("trust", async (ctx) => {
   const target = await getTargetUser(ctx);
 
   if (!target || !target.id) {
-    await ctx.reply(ctx.t("trust.error_no_reply_or_id"));
+    const errorMsg = await ctx.reply(ctx.t("trust.error_no_reply_or_id"));
+
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
 
     return;
   }
@@ -85,24 +91,48 @@ trustHandlers.command("trust", async (ctx) => {
       ctx.t("trust.error_invalid_weight", { requiredVotes: ctx.requiredVotes }),
     );
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, errorMsg.message_id);
-      await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
 
     return;
   }
 
   await addVip(ctx.db, ctx.chat.id, target.id, weight);
 
-  await ctx.reply(
-    ctx.t("trust.trust_success", {
-      name: target.name,
-      userId: target.id,
-      weight,
-    }),
+  const vipTagApplied = await setChatMemberTag({
+    chatId: ctx.chat.id,
+    tag: VIP_MEMBER_TAG,
+    telegram: ctx.telegram,
+    userId: target.id,
+  });
+
+  const successMsg = await ctx.reply(
+    vipTagApplied
+      ? ctx.t("trust.trust_success", {
+          name: target.name,
+          tag: VIP_MEMBER_TAG,
+          userId: target.id,
+          weight,
+        })
+      : ctx.t("trust.trust_success_tag_pending", {
+          name: target.name,
+          tag: VIP_MEMBER_TAG,
+          userId: target.id,
+          weight,
+        }),
     { parse_mode: "HTML" },
   );
+
+  scheduleMessageCleanup({
+    botMessageId: successMsg.message_id,
+    chatId: ctx.chat.id,
+    telegram: ctx.telegram,
+    triggerMessageId: ctx.message.message_id,
+  });
 });
 
 trustHandlers.command("untrust", async (ctx) => {
@@ -119,7 +149,14 @@ trustHandlers.command("untrust", async (ctx) => {
   const target = await getTargetUser(ctx);
 
   if (!target || !target.id) {
-    await ctx.reply(ctx.t("trust.error_no_reply_or_id"));
+    const errorMsg = await ctx.reply(ctx.t("trust.error_no_reply_or_id"));
+
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
 
     return;
   }
@@ -129,21 +166,44 @@ trustHandlers.command("untrust", async (ctx) => {
   if (!removed) {
     const errorMsg = await ctx.reply(ctx.t("trust.untrust_not_found"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, errorMsg.message_id);
-      await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
 
     return;
   }
 
-  await ctx.reply(
-    ctx.t("trust.untrust_success", {
-      name: target.name,
-      userId: target.id,
-    }),
+  const vipTagRemoved = await setChatMemberTag({
+    chatId: ctx.chat.id,
+    tag: "",
+    telegram: ctx.telegram,
+    userId: target.id,
+  });
+
+  const successMsg = await ctx.reply(
+    vipTagRemoved
+      ? ctx.t("trust.untrust_success", {
+          name: target.name,
+          tag: VIP_MEMBER_TAG,
+          userId: target.id,
+        })
+      : ctx.t("trust.untrust_success_tag_pending", {
+          name: target.name,
+          tag: VIP_MEMBER_TAG,
+          userId: target.id,
+        }),
     { parse_mode: "HTML" },
   );
+
+  scheduleMessageCleanup({
+    botMessageId: successMsg.message_id,
+    chatId: ctx.chat.id,
+    telegram: ctx.telegram,
+    triggerMessageId: ctx.message.message_id,
+  });
 });
 
 trustHandlers.command("trustlist", async (ctx) => {
@@ -162,10 +222,12 @@ trustHandlers.command("trustlist", async (ctx) => {
   if (vips.length === 0) {
     const emptyMsg = await ctx.reply(ctx.t("trust.trust_list_empty"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, emptyMsg.message_id);
-      await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: emptyMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
 
     return;
   }
@@ -195,5 +257,12 @@ trustHandlers.command("trustlist", async (ctx) => {
 
   const text = [ctx.t("trust.trust_list_title"), "", ...listItems].join("\n");
 
-  await ctx.reply(text, { parse_mode: "HTML" });
+  const listMsg = await ctx.reply(text, { parse_mode: "HTML" });
+
+  scheduleMessageCleanup({
+    botMessageId: listMsg.message_id,
+    chatId: ctx.chat.id,
+    telegram: ctx.telegram,
+    triggerMessageId: ctx.message.message_id,
+  });
 });

@@ -1,9 +1,8 @@
 import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
-import { FAQ_ERROR_TTL_MS, MEDIA_CHANNEL_TARGET } from "../config/env";
-import { isGroup } from "../helpers/is-group";
-import { safeDelete } from "../helpers/safe-delete";
+import { MEDIA_CHANNEL_TARGET } from "../config/env";
+import { isGroup, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const mediaHandlers = new Composer<BotContext>();
@@ -63,12 +62,15 @@ mediaHandlers.on([message("photo"), message("video")], async (ctx, next) => {
     });
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown Error";
+
     console.error(`Failed to forward media to channel: ${errorMsg}`);
 
     const errorReply = await ctx.reply(ctx.t("media.error_forwarding"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, chatId, errorReply.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorReply.message_id,
+      chatId,
+      telegram: ctx.telegram,
+    });
   }
 });

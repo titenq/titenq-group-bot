@@ -96,6 +96,7 @@ For the bot to function correctly in your group, ensure the following steps are 
 1. Add the bot to your Telegram group.
 2. Promote the bot to **Administrator**.
 3. **Hard Permissions Required**: The bot must have **Delete messages** and **Ban users** permissions to enforce moderation actions.
+4. **Optional Permission for VIP Tag**: To apply or remove the visual `VIP` label next to member names, the bot must also be an administrator with permission to **manage member tags**. Without this permission, `/trust` and `/untrust` still work for weighted voting, but the Telegram label will not be changed.
 
 ---
 
@@ -187,6 +188,8 @@ silenciado e os admins são notificados.
 /trust [ID] [peso] — Define um membro como confiável e o peso do seu voto (1 a 10).
 /untrust [ID] — Remove o status de membro confiável e reseta o peso para 1.
 /trustlist — Lista todos os membros confiáveis e seus respectivos pesos de voto.
+Observação: a etiqueta VIP só será aplicada/removida no Telegram se o bot for
+admin e tiver a permissão de gerenciar etiquetas de membros.
 
 📚 FAQs Dinâmicos
 /faq palavra link — Cadastra uma resposta rápida (apenas admins).
@@ -244,6 +247,7 @@ Admins can delegate moderation power to trusted members by increasing their vote
 - **Set Trust**: `/trust [ID] [weight]`. The `weight` must be between 1 and the `REQUIRED_VOTES` limit. If no weight is provided, it defaults to the full requirement (instant action).
 - **Reset Trust**: `/untrust [ID]` removes the VIP status and resets the weight back to 1.
 - **List Trusted Members**: `/trustlist` shows all members who have a special vote weight in the group.
+- **VIP Label in Telegram**: When available, the bot also applies/removes the visual `VIP` member tag in Telegram. This is optional and depends on the bot having the administrator permission to manage member tags.
 
 All trust-related error messages (invalid weight, user not found) and command calls are automatically deleted after 1 minute to keep the group history clean.
 

@@ -1,10 +1,8 @@
 import i18next from "i18next";
 import { Composer } from "telegraf";
 
-import { FAQ_ERROR_TTL_MS } from "../config/env";
 import { upsertGroupData } from "../db";
-import { isAdmin } from "../helpers/is-admin";
-import { safeDelete } from "../helpers/safe-delete";
+import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 import { BotContext } from "../interfaces/bot-context";
 import { i18nOptionsMarkup } from "../markups/i18n-options";
@@ -127,6 +125,7 @@ commandHandlers.command("menu", async (ctx) => {
     ctx.t("commands.menu_trust_add", { banKeyword, requiredVotes }),
     ctx.t("commands.menu_trust_list"),
     ctx.t("commands.menu_trust_remove"),
+    ctx.t("commands.menu_trust_tag_note"),
     "",
     "",
     `*${ctx.t("commands.menu_auto_delete")}*`,
@@ -134,8 +133,10 @@ commandHandlers.command("menu", async (ctx) => {
 
   const menuReply = await ctx.reply(menuText, { parse_mode: "Markdown" });
 
-  setTimeout(async () => {
-    await safeDelete(ctx.telegram, ctx.chat.id, menuReply.message_id);
-    await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-  }, FAQ_ERROR_TTL_MS);
+  scheduleMessageCleanup({
+    botMessageId: menuReply.message_id,
+    chatId: ctx.chat.id,
+    telegram: ctx.telegram,
+    triggerMessageId: ctx.message.message_id,
+  });
 });

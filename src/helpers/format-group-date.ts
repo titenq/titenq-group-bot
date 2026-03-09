@@ -14,7 +14,7 @@ export const formatGroupDate = (
     languageCode && Object.values(Language).includes(languageCode as Language)
       ? (languageCode as Language)
       : Language.PT;
-  
+
   const locale = LANGUAGE_LOCALE_MAP[language];
 
   return new Intl.DateTimeFormat(locale, {

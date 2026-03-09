@@ -1,34 +1,42 @@
 import { Composer, Markup } from "telegraf";
 
-import { FAQ_ERROR_TTL_MS, FAQ_TRIGGER_LENGTH } from "../config/env";
+import { FAQ_TRIGGER_LENGTH } from "../config/env";
 import {
   getGroupFaq,
   listGroupFaqs,
   removeGroupFaq,
   upsertGroupFaq,
 } from "../db";
-import { isAdmin } from "../helpers/is-admin";
-import { normalize } from "../helpers/normalize";
-import { safeDelete } from "../helpers/safe-delete";
-import { validateTelegramLink } from "../helpers/validate-telegram-link";
+import {
+  isAdmin,
+  normalize,
+  safeDelete,
+  scheduleMessageCleanup,
+  validateTelegramLink,
+} from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const faqHandlers = new Composer<BotContext>();
 
-faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => {
+faqHandlers.command("faq", async (ctx) => {
   if (!ctx.chat) {
     return;
   }
 
-  const argString = ctx.match[1] || "";
+  const fullText = ctx.message.text;
+  const firstSpaceIndex = fullText.indexOf(" ");
+  const argString =
+    firstSpaceIndex === -1 ? "" : fullText.slice(firstSpaceIndex + 1);
   const parts = argString.trim().split(" ").filter(Boolean);
 
   if (parts.length === 0) {
     const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -43,9 +51,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
         }),
       );
 
-      setTimeout(() => {
-        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-      }, FAQ_ERROR_TTL_MS);
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
 
       return;
     }
@@ -55,10 +65,12 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
         ctx.t("commands.faq_trigger_reply_required"),
       );
 
-      setTimeout(() => {
-        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-        safeDelete(ctx.telegram, ctx.chat!.id, ctx.message.message_id);
-      }, FAQ_ERROR_TTL_MS);
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+        triggerMessageId: ctx.message.message_id,
+      });
 
       return;
     }
@@ -70,9 +82,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
         ctx.t("commands.faq_not_found", { trigger: triggerKeyword }),
       );
 
-      setTimeout(() => {
-        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-      }, FAQ_ERROR_TTL_MS);
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
 
       return;
     }
@@ -111,9 +125,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
   ) {
     const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -123,9 +139,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
       ctx.t("commands.faq_trigger_too_long", { maxLength: FAQ_TRIGGER_LENGTH }),
     );
 
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -136,9 +154,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     if (!isValid) {
       const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
-      setTimeout(() => {
-        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-      }, FAQ_ERROR_TTL_MS);
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
 
       return;
     }
@@ -171,7 +191,7 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
   }
 });
 
-faqHandlers.hears(/^\/f[aáàâãä]qs(?:@[\w]+)?$/i, async (ctx) => {
+faqHandlers.command("faqs", async (ctx) => {
   if (!ctx.chat) {
     return;
   }

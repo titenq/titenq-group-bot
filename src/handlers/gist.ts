@@ -1,10 +1,13 @@
 import { Composer } from "telegraf";
 
-import { FAQ_ERROR_TTL_MS, GITHUB_GIST_TOKEN } from "../config/env";
-import { createGist } from "../helpers/create-gist";
-import { isGroup } from "../helpers/is-group";
-import { LANGUAGE_EXTENSION_MAP } from "../helpers/language-extension-map";
-import { safeDelete } from "../helpers/safe-delete";
+import { GITHUB_GIST_TOKEN } from "../config/env";
+import {
+  createGist,
+  isGroup,
+  LANGUAGE_EXTENSION_MAP,
+  safeDelete,
+  scheduleMessageCleanup,
+} from "../helpers";
 import { BotContext } from "../interfaces/bot-context";
 
 export const gistHandlers = new Composer<BotContext>();
@@ -25,9 +28,11 @@ gistHandlers.command("gist", async (ctx, next) => {
   if (firstSpaceIndex === -1) {
     const errorReply = await ctx.reply(ctx.t("gist.error_missing_language"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, errorReply.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorReply.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -38,9 +43,11 @@ gistHandlers.command("gist", async (ctx, next) => {
   if (secondSpaceIndex === -1) {
     const errorReply = await ctx.reply(ctx.t("gist.error_missing_code"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, errorReply.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorReply.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -51,9 +58,11 @@ gistHandlers.command("gist", async (ctx, next) => {
   if (!code) {
     const errorReply = await ctx.reply(ctx.t("gist.error_missing_code"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, ctx.chat.id, errorReply.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorReply.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -89,8 +98,10 @@ gistHandlers.command("gist", async (ctx, next) => {
 
     const errorReply = await ctx.reply(ctx.t("gist.error_api_failed"));
 
-    setTimeout(async () => {
-      await safeDelete(ctx.telegram, chatId, errorReply.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorReply.message_id,
+      chatId,
+      telegram: ctx.telegram,
+    });
   }
 });
