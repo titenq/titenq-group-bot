@@ -28,6 +28,7 @@
     "features_feature_media": "/media",
     "features_feature_moderation": "ban",
     "features_feature_trust": "/trust",
+    "features_feature_welcome": "/welcome",
     "menu_title": "Comandos e Funcionalidades do Bot",
     "menu_moderation_title": "Moderação Comunitária",
     "menu_moderation_desc": "Responda qualquer mensagem com `{{banKeyword}}` para iniciar uma votação de remoção. Ao atingir {{requiredVotes}} votos, a mensagem é removida, o usuário suspeito é silenciado e os admins são notificados.",
@@ -44,6 +45,8 @@
     "menu_lang_desc": "`/i18n` — Altera o idioma do bot para este grupo (apenas admins).",
     "menu_features_title": "Features",
     "menu_features_desc": "`/features` — Liga ou desliga as funcionalidades do bot neste grupo (apenas admins).",
+    "menu_welcome_title": "Boas-vindas",
+    "menu_welcome_desc": "`/welcome` — Define a mensagem de boas-vindas personalizada do grupo e permite visualizar um preview (apenas admins).",
     "menu_chat_title": "Chat Temporário",
     "menu_chat_create": "`/chat` — Cria uma nova sala de chat privada e temporária.",
     "menu_chat_close": "`/chat close` — Encerra a sala atual (apenas quem criou a sala).",
@@ -178,6 +181,24 @@
       "cat": "gato",
       "dog": "cachorro"
     }
+  },
+  "welcome": {
+    "setup_prompt": "A sua próxima mensagem será a mensagem de boas-vindas do grupo.\n\nPlaceholders disponíveis:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nExemplo:\n<code>Bem-vindo, {name} {username}, ao grupo {group}!</code>",
+    "saved": "Status atual da feature: <b>{{status}}</b>\nAtive ou desative em <code>/features</code>.",
+    "preview_ready": "✅ Preview da mensagem de boas-vindas pronto.\n\n{{statusText}}\n\nTemplate atual:\n<code>{{template}}</code>",
+    "saved_confirmed": "✅ Mensagem de boas-vindas salva.\n\n{{statusText}}\n\nTemplate atual:\n<code>{{template}}</code>",
+    "preview_button": "👀 Visualizar no grupo",
+    "save_button": "Salvar",
+    "edit_button": "Editar",
+    "cancel_button": "Cancelar",
+    "preview_only_owner": "Somente o admin que configurou esta mensagem pode visualizar o preview.",
+    "preview_sent": "Preview enviado no grupo.",
+    "preview_cancelled": "Preview removido.",
+    "not_configured": "Nenhuma mensagem de boas-vindas foi configurada ainda.",
+    "invalid_template": "Envie um texto válido para a mensagem de boas-vindas.",
+    "saved_success": "Mensagem de boas-vindas salva.",
+    "edit_started": "Envie a nova mensagem de boas-vindas.",
+    "cancelled": "Configuração de boas-vindas cancelada."
   },
   "trust": {
     "error_no_reply_or_id": "❌ Responda a uma mensagem ou informe o ID do usuário.",

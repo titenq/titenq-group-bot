@@ -28,6 +28,7 @@
     "features_feature_media": "/media",
     "features_feature_moderation": "ban",
     "features_feature_trust": "/trust",
+    "features_feature_welcome": "/welcome",
     "menu_title": "Bot Commands & Features",
     "menu_moderation_title": "Community Moderation",
     "menu_moderation_desc": "Reply to any message with `{{banKeyword}}` to start a removal vote. Upon reaching {{requiredVotes}} votes, the message is deleted, the suspicious user is muted, and admins are notified.",
@@ -44,6 +45,8 @@
     "menu_lang_desc": "`/i18n` — Change the bot language for this group (admins only).",
     "menu_features_title": "Features",
     "menu_features_desc": "`/features` — Enable or disable the bot features in this group (admins only).",
+    "menu_welcome_title": "Welcome",
+    "menu_welcome_desc": "`/welcome` — Set the custom welcome message for the group and preview it in the chat (admins only).",
     "menu_chat_title": "Temporary Chat",
     "menu_chat_create": "`/chat` — Creates a new private and temporary chat room.",
     "menu_chat_close": "`/chat close` — Closes the current room (creator only).",
@@ -177,6 +180,24 @@
       "cat": "cat",
       "dog": "dog"
     }
+  },
+  "welcome": {
+    "setup_prompt": "Your next message will become this group's welcome message.\n\nAvailable placeholders:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nExample:\n<code>Welcome, {name} {username}, to the group {group}!</code>",
+    "saved": "Current feature status: <b>{{status}}</b>\nEnable or disable it in <code>/features</code>.",
+    "preview_ready": "✅ Welcome message preview is ready.\n\n{{statusText}}\n\nCurrent template:\n<code>{{template}}</code>",
+    "saved_confirmed": "✅ Welcome message saved.\n\n{{statusText}}\n\nCurrent template:\n<code>{{template}}</code>",
+    "preview_button": "👀 Preview in group",
+    "save_button": "Save",
+    "edit_button": "Edit",
+    "cancel_button": "Cancel",
+    "preview_only_owner": "Only the admin who configured this message can preview it.",
+    "preview_sent": "Preview sent to the group.",
+    "preview_cancelled": "Preview removed.",
+    "not_configured": "No welcome message has been configured yet.",
+    "invalid_template": "Send a valid text for the welcome message.",
+    "saved_success": "Welcome message saved.",
+    "edit_started": "Send the new welcome message.",
+    "cancelled": "Welcome setup cancelled."
   },
   "trust": {
     "error_no_reply_or_id": "❌ Reply to a message or provide the user ID.",

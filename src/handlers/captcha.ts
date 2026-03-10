@@ -3,6 +3,7 @@ import { message } from "telegraf/filters";
 
 import { CAPTCHA_MAX_ATTEMPTS } from "../config/constants";
 import {
+  getGroupWelcomeMessage,
   getCaptchaChallenge,
   updateCaptchaChallengeProgress,
   upsertCaptchaChallenge,
@@ -10,6 +11,7 @@ import {
 import { GroupFeature, Language } from "../enums";
 import {
   buildCaptchaChallengeText,
+  buildWelcomeMessage,
   createCaptchaChallenge,
   isAdmin,
   isGroupFeatureEnabled,
@@ -221,14 +223,49 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
     );
 
     if (completedChallenge) {
-      await ctx.reply(
-        ctx.t("captcha.welcome", {
-          name: ctx.from.first_name,
-        }),
-        {
-          parse_mode: "HTML",
-        },
+      const welcomeMessageEnabled = await isGroupFeatureEnabled(
+        ctx,
+        GroupFeature.WELCOME,
       );
+
+      if (welcomeMessageEnabled) {
+        const welcomeMessage = await getGroupWelcomeMessage(
+          ctx.db,
+          ctx.chat.id,
+        );
+
+        if (welcomeMessage) {
+          await ctx.reply(
+            buildWelcomeMessage({
+              groupTitle: "title" in ctx.chat ? ctx.chat.title : undefined,
+              name: ctx.from.first_name,
+              template: welcomeMessage.template,
+              username: ctx.from.username,
+            }),
+            {
+              parse_mode: "HTML",
+            },
+          );
+        } else {
+          await ctx.reply(
+            ctx.t("captcha.welcome", {
+              name: ctx.from.first_name,
+            }),
+            {
+              parse_mode: "HTML",
+            },
+          );
+        }
+      } else {
+        await ctx.reply(
+          ctx.t("captcha.welcome", {
+            name: ctx.from.first_name,
+          }),
+          {
+            parse_mode: "HTML",
+          },
+        );
+      }
     }
 
     await ctx.answerCbQuery(ctx.t("captcha.success"), {
@@ -239,11 +276,13 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
   }
 
   const nextAttempts = challenge.attempts + 1;
+
   const clickedChallenge = {
     ...challenge,
     attempts: nextAttempts,
     selectedSequenceKeys: nextSelectedSequenceKeys,
   };
+
   const challengeMessage = ctx.callbackQuery.message;
 
   await upsertCaptchaChallenge(ctx.db, clickedChallenge);
@@ -327,6 +366,7 @@ captchaHandlers.action(/^captcha_retry_(\d+)$/i, async (ctx) => {
     ctx.chat.id,
     targetUserId,
   );
+
   const callbackMessage = ctx.callbackQuery.message;
 
   if (!challenge && callbackMessage) {
@@ -344,7 +384,6 @@ captchaHandlers.action(/^captcha_retry_(\d+)$/i, async (ctx) => {
     callbackMessage.message_id !== challenge.challengeMessageId
   ) {
     await safeDelete(ctx.telegram, ctx.chat.id, callbackMessage.message_id);
-
     await ctx.answerCbQuery();
 
     return;

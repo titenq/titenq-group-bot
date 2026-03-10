@@ -1,5 +1,6 @@
 export { buildCaptchaChallengeText } from "./build-captcha-challenge-text";
 export { buildSnapshotMediaCaption } from "./build-snapshot-media-caption";
+export { buildWelcomeMessage } from "./build-welcome-message";
 export { caseKey } from "./case-key";
 export { cleanupCaseMessages } from "./cleanup-case-messages";
 export { createCaptchaChallenge } from "./create-captcha-challenge";

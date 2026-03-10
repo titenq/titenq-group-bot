@@ -5,6 +5,7 @@ export const GroupFeature = {
   MEDIA: "media",
   MODERATION: "moderation",
   TRUST: "trust",
+  WELCOME: "welcome",
 } as const;
 
 export type GroupFeature = (typeof GroupFeature)[keyof typeof GroupFeature];
@@ -13,4 +14,5 @@ export const GROUP_FEATURES = Object.values(GroupFeature);
 
 export const DEFAULT_DISABLED_GROUP_FEATURES = new Set<GroupFeature>([
   GroupFeature.CAPTCHA,
+  GroupFeature.WELCOME,
 ]);

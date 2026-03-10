@@ -13,6 +13,7 @@ import { tempChatHandlers } from "./temp-chat";
 import { globalBanActions } from "./global-ban-actions";
 import { trustHandlers } from "./trust";
 import { voteHandlers } from "./vote";
+import { welcomeHandlers } from "./welcome";
 
 export const rootHandler = new Composer<BotContext>();
 
@@ -24,6 +25,7 @@ rootHandler.use(mediaHandlers);
 rootHandler.use(faqHandlers);
 rootHandler.use(tempChatHandlers);
 rootHandler.use(trustHandlers);
+rootHandler.use(welcomeHandlers);
 rootHandler.use(groupEventHandlers);
 rootHandler.use(voteHandlers);
 rootHandler.use(globalBanActions);

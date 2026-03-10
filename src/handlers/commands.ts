@@ -41,7 +41,6 @@ const showFeaturesPanel = async (ctx: BotContext) => {
   const features = await getGroupFeatures(ctx.db, ctx.chat.id);
 
   await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-
   await ctx.reply(buildFeaturesText(ctx), {
     parse_mode: "HTML",
     ...groupFeaturesMarkup(ctx.t, features),
@@ -85,7 +84,6 @@ commandHandlers.on(message("text"), async (ctx, next) => {
   }
 
   await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-
   await ctx.reply(ctx.t("commands.i18n_menu_prompt"), i18nOptionsMarkup());
 });
 
@@ -166,6 +164,9 @@ commandHandlers.command("menu", async (ctx) => {
     "",
     `⚙️ *${ctx.t("commands.menu_features_title")}*`,
     ctx.t("commands.menu_features_desc"),
+    "",
+    `👋 *${ctx.t("commands.menu_welcome_title")}*`,
+    ctx.t("commands.menu_welcome_desc"),
     "",
     `💬 *${ctx.t("commands.menu_chat_title")}*`,
     ctx.t("commands.menu_chat_create"),
@@ -261,6 +262,7 @@ commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
   );
 
   const features = await getGroupFeatures(ctx.db, ctx.chat.id);
+
   const featureLabel = ctx.t(
     `commands.features_feature_${updatedFeature.featureKey}`,
   );

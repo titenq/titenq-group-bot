@@ -27,7 +27,6 @@ export const createCaptchaChallenge = (
 ): CaptchaChallenge => {
   const shuffledItems = shuffle([...CAPTCHA_ITEMS]);
   const availableItems = shuffledItems.slice(0, CAPTCHA_GRID_SIZE);
-  
   const targetSequence = shuffle([...availableItems]).slice(
     0,
     CAPTCHA_SEQUENCE_LENGTH,

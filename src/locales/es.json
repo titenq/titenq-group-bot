@@ -28,6 +28,7 @@
     "features_feature_media": "/media",
     "features_feature_moderation": "ban",
     "features_feature_trust": "/trust",
+    "features_feature_welcome": "/welcome",
     "menu_title": "Comandos y Funcionalidades del Bot",
     "menu_moderation_title": "Moderación Comunitaria",
     "menu_moderation_desc": "Responde cualquier mensaje con `{{banKeyword}}` para iniciar una votación de eliminación. Al alcanzar {{requiredVotes}} votos, el mensaje es eliminado, el usuario sospechoso es silenciado y los admins son notificados.",
@@ -44,6 +45,8 @@
     "menu_lang_desc": "`/i18n` — Cambia el idioma del bot para este grupo (solo admins).",
     "menu_features_title": "Features",
     "menu_features_desc": "`/features` — Activa o desactiva las funcionalidades del bot en este grupo (solo admins).",
+    "menu_welcome_title": "Bienvenida",
+    "menu_welcome_desc": "`/welcome` — Define el mensaje de bienvenida personalizado del grupo y permite ver un preview en el chat (solo admins).",
     "menu_chat_title": "Chat Temporal",
     "menu_chat_create": "`/chat` — Crea una nueva sala de chat privada y temporal.",
     "menu_chat_close": "`/chat close` — Cierra la sala actual (solo quien la creó).",
@@ -177,6 +180,24 @@
       "cat": "gato",
       "dog": "perro"
     }
+  },
+  "welcome": {
+    "setup_prompt": "Tu próximo mensaje será el mensaje de bienvenida de este grupo.\n\nPlaceholders disponibles:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nEjemplo:\n<code>Bienvenido, {name} {username}, al grupo {group}!</code>",
+    "saved": "Estado actual de la feature: <b>{{status}}</b>\nActívala o desactívala en <code>/features</code>.",
+    "preview_ready": "✅ El preview del mensaje de bienvenida está listo.\n\n{{statusText}}\n\nTemplate actual:\n<code>{{template}}</code>",
+    "saved_confirmed": "✅ Mensaje de bienvenida guardado.\n\n{{statusText}}\n\nTemplate actual:\n<code>{{template}}</code>",
+    "preview_button": "👀 Ver preview en el grupo",
+    "save_button": "Guardar",
+    "edit_button": "Editar",
+    "cancel_button": "Cancelar",
+    "preview_only_owner": "Solo el admin que configuró este mensaje puede ver el preview.",
+    "preview_sent": "Preview enviado al grupo.",
+    "preview_cancelled": "Preview eliminado.",
+    "not_configured": "Todavía no hay un mensaje de bienvenida configurado.",
+    "invalid_template": "Envía un texto válido para el mensaje de bienvenida.",
+    "saved_success": "Mensaje de bienvenida guardado.",
+    "edit_started": "Envía el nuevo mensaje de bienvenida.",
+    "cancelled": "Configuración de bienvenida cancelada."
   },
   "trust": {
     "error_no_reply_or_id": "❌ Responde a un mensaje o informa el ID del usuario.",

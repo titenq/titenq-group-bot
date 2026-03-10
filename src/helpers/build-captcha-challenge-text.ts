@@ -22,7 +22,7 @@ export const buildCaptchaChallengeText = (
     1,
     Math.ceil((challenge.expiresAt - Date.now()) / 1000),
   );
-  
+
   const retryPending = isRetryPending(challenge);
 
   return [
