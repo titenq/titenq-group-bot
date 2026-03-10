@@ -182,6 +182,7 @@
     }
   },
   "welcome": {
+    "default_template": "Welcome, {name} {username}, to the group {group}!",
     "setup_prompt": "Your next message will become this group's welcome message.\n\nAvailable placeholders:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nExample:\n<code>Welcome, {name} {username}, to the group {group}!</code>",
     "saved": "Current feature status: <b>{{status}}</b>\nEnable or disable it in <code>/features</code>.",
     "preview_ready": "✅ Welcome message preview is ready.\n\n{{statusText}}\n\nCurrent template:\n<code>{{template}}</code>",

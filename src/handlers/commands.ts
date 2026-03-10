@@ -2,7 +2,13 @@ import i18next from "i18next";
 import { Composer } from "telegraf";
 import { callbackQuery, message } from "telegraf/filters";
 
-import { getGroupFeatures, toggleGroupFeature, upsertGroupData } from "../db";
+import {
+  getGroupFeatures,
+  getGroupWelcomeMessage,
+  toggleGroupFeature,
+  upsertGroupData,
+  upsertGroupWelcomeMessage,
+} from "../db";
 import { GROUP_FEATURES, GroupFeature } from "../enums";
 import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
@@ -260,6 +266,22 @@ commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
     featureKey,
     ctx.from.id,
   );
+
+  if (
+    updatedFeature.featureKey === GroupFeature.WELCOME &&
+    updatedFeature.isEnabled
+  ) {
+    const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
+
+    if (!welcomeMessage) {
+      await upsertGroupWelcomeMessage(
+        ctx.db,
+        ctx.chat.id,
+        ctx.t("welcome.default_template"),
+        ctx.from.id,
+      );
+    }
+  }
 
   const features = await getGroupFeatures(ctx.db, ctx.chat.id);
 

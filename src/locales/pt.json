@@ -183,6 +183,7 @@
     }
   },
   "welcome": {
+    "default_template": "Bem-vindo, {name} {username}, ao grupo {group}!",
     "setup_prompt": "A sua próxima mensagem será a mensagem de boas-vindas do grupo.\n\nPlaceholders disponíveis:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nExemplo:\n<code>Bem-vindo, {name} {username}, ao grupo {group}!</code>",
     "saved": "Status atual da feature: <b>{{status}}</b>\nAtive ou desative em <code>/features</code>.",
     "preview_ready": "✅ Preview da mensagem de boas-vindas pronto.\n\n{{statusText}}\n\nTemplate atual:\n<code>{{template}}</code>",

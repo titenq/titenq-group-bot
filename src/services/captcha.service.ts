@@ -210,7 +210,7 @@ export const createCaptchaService = (telegram: Telegram, db: BotDb) => {
     );
 
     const t = i18next.getFixedT(params.languageCode);
-    
+
     const sentMessage = await telegram.sendMessage(
       params.chatId,
       buildCaptchaChallengeText(t, challenge),

@@ -24,7 +24,7 @@ export const captchaChallengeMarkup = (
   >((rows, itemKey, index) => {
     const item = CAPTCHA_ITEMS_BY_KEY.get(itemKey);
     const selectedIndex = challenge.selectedSequenceKeys.indexOf(itemKey);
-    
+
     const marker =
       selectedIndex >= 0 ? `${STEP_MARKERS[selectedIndex] ?? ""} ` : "";
 
