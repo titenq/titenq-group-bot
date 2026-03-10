@@ -15,11 +15,11 @@
 
 **TitenQ Group Bot** is a multi-purpose autonomous bot for Telegram communities. It combines community-driven moderation, a dynamic FAQ system, a media gallery, a GitHub Gist integration, and full internationalization — all designed to reduce manual overhead and improve the group experience.
 
-Built with **TypeScript** foundations and modern code standards (`ESNext`), the project focuses on high performance, robustness, and persistent state guaranteed by **SQLite** transactions.
+Built with **TypeScript** and modern code standards, the project focuses on performance, robustness, and persistent state backed by **SQLite**.
 
 ---
 
-## ✨ Enterprise Features
+## ✨ Features
 
 - **Community-Driven Moderation**: Group members vote on suspicious messages. When the threshold is reached, the message is deleted, the user is instantly muted, and a case is opened for admin review.
 
@@ -29,13 +29,17 @@ Built with **TypeScript** foundations and modern code standards (`ESNext`), the 
 
 - **Dynamic FAQ System**: Admins register keyword → link pairs. Members trigger them directly or by replying to a question — no repeated answers, no chat pollution.
 
+- **Entry Captcha Protection (NEW)**: New members can be challenged with an interactive captcha before gaining permission to send messages in the group, reducing automated bot joins and spam waves.
+
+- **Custom Welcome Messages (NEW)**: Admins can configure a per-group welcome message with placeholders like `{name}`, `{username}`, and `{group}`, preview it inside the chat, and keep it synchronized with the group language when using the default template.
+
 - **Media Gallery**: Photos and videos sent with `/media` are automatically forwarded to a dedicated public Telegram Channel. The original is deleted and a link is posted back in the group.
 
-- **GitHub Gist Integration**: Members share code via `/gist language code`. The bot creates a public Gist on GitHub, deletes the original message, and posts the link.
+- **GitHub Gist Integration**: Members can share code with `/gist <language> <code>`. The bot creates a public Gist on GitHub, deletes the original message, and posts the generated link back to the group.
 
 - **Quick Reference Menu**: Any member can type `/menu` to see all available commands and features. The message auto-deletes after 1 minute.
 
-- **Per-Group Feature Toggles (NEW)**: Group admins can use `/features` to enable or disable specific bot features such as FAQ, Gist, Media, Moderation, and Trust for that specific group.
+- **Per-Group Feature Toggles (NEW)**: Group admins can use `/features` to enable or disable specific bot features such as Captcha, FAQ, Gist, Media, Moderation, Trust, and Welcome for that specific group.
 
 - **Full Internationalization (i18n)**: All bot messages support 🇧🇷 Portuguese, 🇺🇸 English, and 🇪🇸 Spanish. Admins switch language per group with `/i18n`.
 
@@ -107,8 +111,8 @@ For the bot to function correctly in your group, ensure the following steps are 
 **1. Clone the repository:**
 
 ```bash
-git clone https://github.com/titenq/titenq-bot.git
-cd titenq-bot
+git clone https://github.com/titenq/titenq-group-bot.git
+cd titenq-group-bot
 ```
 
 **2. Install dependencies:**
@@ -128,9 +132,11 @@ Edit the `.env` file to provide your confidential keys:
 
 ```env
 BOT_TOKEN="<your_bot_token_here>"
+BOT_USERNAME="YourBotUsername"
 BOT_OWNER_ID=<your_telegram_user_id>
 REQUIRED_VOTES=10
 BAN_KEYWORD="ban"
+LANGUAGE="pt"
 FAQ_TRIGGER_LENGTH=20
 FAQ_ERROR_TTL_MS=60000
 DB_PATH="./data/bot.sqlite"
@@ -155,7 +161,7 @@ npm run dev
 
 ### Production Mode
 
-Optimized `tsc` build generating robust JavaScript output (`ES2020/ESNext`):
+Build the project and run the compiled bot:
 
 ```bash
 npm run build
@@ -205,6 +211,12 @@ Galeria oficial e o Bot retornará o link da postagem no grupo.
 ⚙️ Features
 /features — Liga ou desliga as funcionalidades do bot neste grupo (apenas admins).
 
+🧩 Captcha de Entrada
+Novos membros precisam concluir um captcha para liberar o envio de mensagens no grupo (quando habilitado por um admin em /features).
+
+👋 Boas-vindas
+/welcome — Define a mensagem de boas-vindas personalizada do grupo e permite visualizar um preview (apenas admins, quando habilitado em /features).
+
 💬 Chat Temporário
 /chat — Cria uma nova sala de chat privada e temporária.
 /chat close — Encerra a sala atual (apenas quem criou a sala).
@@ -234,7 +246,7 @@ The core feature of the bot is the community-driven moderation flow to handle sp
 
 3. **Audit Tracking**: The bot acknowledges the report, removes the reporter's message to keep the chat clean, and starts counting via a public scoreboard: `ban (X of 10)`. Wait time deduplication is enforced to avoid vote spam.
 
-4. **Isolation**: Upon reaching the threshold (e.g., 10 unique votes, configurable via `REQUIRED_VOTES` in `.env`), the original suspicious message is immediately DELETED from public view, and the author of the message is **instantly muted** (restricted from sending any further messages in that specific group) while awaiting the admin's veredict.
+4. **Isolation**: Upon reaching the threshold (e.g. 10 unique votes, configurable via `REQUIRED_VOTES` in `.env`), the original suspicious message is immediately deleted from public view, and the author is **instantly muted** while awaiting the admin verdict.
 
 5. **Final Deliberation**: An admin verdict panel is launched, accessible only by administrators. They can:
    - `View content` (Overlay snapshotting).
@@ -263,10 +275,45 @@ Group administrators can use `/features` to open an inline control panel and ena
 
 Alias available: `/feats`
 
-- **Default State**: All supported features start as enabled (`ON`).
+- **Default State**: Most features start as enabled (`ON`). `captcha` and `welcome` start disabled (`OFF`).
 - **Tracked Changes**: Each toggle stores the last admin who changed it and the last update timestamp in SQLite.
-- **Current Toggles**: `/faq`, `/gist`, `/media`, `ban`, and `/trust`.
+- **Current Toggles**: `captcha`, `/faq`, `/gist`, `/media`, `ban`, `/trust`, and `welcome`.
 - **Inline Controls**: The panel updates in place and includes a button to delete the panel message.
+
+---
+
+## 🧩 Entry Captcha
+
+The bot can protect the group entrance flow with an interactive captcha before a new member is allowed to speak.
+
+- **Activation**: The feature starts disabled by default and must be enabled by an admin in `/features`.
+- **How it works**: When a human user joins the group, the bot temporarily restricts their permissions and sends a captcha challenge in the group.
+- **Validation Flow**: The new member must click the correct emoji sequence within the allowed time and attempt limit.
+- **Failure Handling**: If the user runs out of time or exhausts all attempts, the bot removes them from the group.
+- **Bot Join Handling**: Bots do not solve the captcha. If a non-admin adds a bot, the bot can be removed automatically.
+- **Admin Test Mode**: Admins can use `/captcha` to simulate the challenge flow without being removed from the group.
+
+This is one of the recommended features to enable in communities that receive frequent spam or automated bot joins.
+
+---
+
+## 👋 Welcome Messages
+
+The bot can send a configurable welcome message to new members after they join the group.
+
+- **Activation**: The feature starts disabled by default and must be enabled by an admin in `/features`.
+- **Configuration Command**: Use `/welcome` to start the setup flow, or send `/welcome <message>` directly.
+- **Supported Placeholders**: `{name}`, `{username}`, and `{group}`.
+- **Preview Flow**: Admins can preview the message in the group before saving, edit it, or cancel the setup.
+- **Default Template**: If an admin enables `welcome` in `/features` before configuring a custom message, the bot stores the default localized welcome template automatically.
+- **Language Sync**: If the saved welcome message is still the default template, changing the group language with `/i18n` updates the welcome template to the new locale automatically.
+- **Captcha Integration**: If both `captcha` and `welcome` are enabled, the welcome message is sent only after the user completes the captcha successfully.
+
+This section is a good place to add future screenshots of:
+
+- the `/welcome` setup panel
+- the preview message in the group
+- the final welcome message shown to a new member
 
 ---
 
