@@ -9,7 +9,7 @@ import {
   upsertGroupData,
   upsertGroupWelcomeMessage,
 } from "../db";
-import { GROUP_FEATURES, GroupFeature } from "../enums";
+import { GROUP_FEATURES, GroupFeature, Language } from "../enums";
 import { isAdmin, safeDelete, scheduleMessageCleanup } from "../helpers";
 import { SUPPORTED_LANGUAGES } from "../i18n";
 import { BotContext } from "../interfaces";
@@ -17,6 +17,23 @@ import { groupFeaturesMarkup } from "../markups/group-features";
 import { i18nOptionsMarkup } from "../markups/i18n-options";
 
 export const commandHandlers = new Composer<BotContext>();
+
+const isDefaultWelcomeTemplate = (
+  template: string,
+  currentLanguage: string,
+): boolean => {
+  const currentLanguageTemplate = i18next.getFixedT(currentLanguage)(
+    "welcome.default_template",
+  );
+  const knownDefaultTemplates = SUPPORTED_LANGUAGES.map((languageCode) => {
+    return i18next.getFixedT(languageCode)("welcome.default_template");
+  });
+
+  return (
+    template === currentLanguageTemplate ||
+    knownDefaultTemplates.includes(template)
+  );
+};
 
 const buildFeaturesText = (ctx: BotContext) => {
   return [
@@ -116,6 +133,9 @@ commandHandlers.action(/^i18n_set_(.+)$/, async (ctx) => {
     );
   }
 
+  const currentLanguage = ctx.languageCache.get(ctx.chat.id) ?? Language.PT;
+  const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
+
   await upsertGroupData(
     ctx.db,
     ctx.chat.id,
@@ -128,6 +148,18 @@ commandHandlers.action(/^i18n_set_(.+)$/, async (ctx) => {
   ctx.languageCache.set(ctx.chat.id, desiredLanguage);
 
   const i18nReplyT = i18next.getFixedT(desiredLanguage);
+
+  if (
+    welcomeMessage &&
+    isDefaultWelcomeTemplate(welcomeMessage.template, currentLanguage)
+  ) {
+    await upsertGroupWelcomeMessage(
+      ctx.db,
+      ctx.chat.id,
+      i18nReplyT("welcome.default_template"),
+      ctx.from.id,
+    );
+  }
 
   await ctx.answerCbQuery(i18nReplyT("commands.i18n_success_updated"), {
     show_alert: false,
