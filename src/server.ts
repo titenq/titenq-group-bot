@@ -9,12 +9,18 @@ import {
   DB_PATH,
   REQUIRED_VOTES,
 } from "./config/env";
+import {
+  initDatabase,
+  loadActiveCaptchaChallenges,
+  loadActiveRooms,
+  loadGroups,
+} from "./db";
 import { Language } from "./enums";
-import { initDatabase, loadGroups, loadActiveRooms } from "./db";
 import { rootHandler } from "./handlers";
 import { createMediaSenders, loadCasesFromDb } from "./helpers";
 import { initI18n } from "./i18n";
 import { BotContext, VoteCase } from "./interfaces";
+import { createCaptchaService } from "./services/captcha.service";
 import { createMessageQueueService } from "./services/message-queue.service";
 import { createTempChatService } from "./services/temp-chat.service";
 
@@ -24,12 +30,15 @@ export const bootstrap = async (): Promise<void> => {
   const mediaSenders = createMediaSenders(bot.telegram);
   const messageQueue = createMessageQueueService(bot.telegram);
   const db = await initDatabase(DB_PATH);
+  const captchaService = createCaptchaService(bot.telegram, db);
   const tempChatService = createTempChatService(bot.telegram, messageQueue, db);
 
   await initI18n();
   await loadCasesFromDb(db, voteCases);
 
+  const activeCaptchaChallenges = await loadActiveCaptchaChallenges(db);
   const activeRooms = await loadActiveRooms(db);
+  captchaService.loadChallenges(activeCaptchaChallenges);
   tempChatService.loadRooms(activeRooms);
 
   const groups = await loadGroups(db);
@@ -47,6 +56,7 @@ export const bootstrap = async (): Promise<void> => {
     ctx.banKeyword = BAN_KEYWORD;
     ctx.requiredVotes = REQUIRED_VOTES;
     ctx.languageCache = languageCache;
+    ctx.captchaService = captchaService;
     ctx.tempChatService = tempChatService;
 
     const lng = ctx.chat?.id

@@ -3,6 +3,5 @@ data
 dist
 .env
 .env.dev
-.cursorrules
 AGENTS.md
 TODO.md

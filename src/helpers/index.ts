@@ -1,12 +1,15 @@
+export { buildCaptchaChallengeText } from "./build-captcha-challenge-text";
 export { buildSnapshotMediaCaption } from "./build-snapshot-media-caption";
 export { caseKey } from "./case-key";
 export { cleanupCaseMessages } from "./cleanup-case-messages";
+export { createCaptchaChallenge } from "./create-captcha-challenge";
 export { createGist } from "./create-gist";
 export { createMediaSenders } from "./create-media-senders";
 export { formatGroupDate } from "./format-group-date";
 export { formatVoterDisplay } from "./format-voter-display";
 export { getMessageSnapshot } from "./get-message-snapshot";
 export { isAdmin } from "./is-admin";
+export { isCaptchaRetryPending } from "./is-captcha-retry-pending";
 export { isGroupFeatureEnabled } from "./is-group-feature-enabled";
 export { isGroup } from "./is-group";
 export { isSnapshotMediaType } from "./is-snapshot-media-type";

@@ -73,3 +73,16 @@ export interface GroupFeatureRow {
   updated_by_user_id: number | null;
   updated_at: string | null;
 }
+
+export interface CaptchaChallengeRow {
+  attempts: number;
+  available_item_keys_json: string;
+  challenge_message_id: number;
+  chat_id: number;
+  created_at: string | null;
+  expires_at: number;
+  is_test_mode: number;
+  selected_sequence_keys_json: string;
+  target_sequence_keys_json: string;
+  user_id: number;
+}

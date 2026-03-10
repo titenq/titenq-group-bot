@@ -1,3 +1,4 @@
+export type { BotContext } from "./bot-context";
 export type {
   MediaSendFn,
   MessageSnapshot,
@@ -5,9 +6,15 @@ export type {
   TargetUser,
   VoteCase,
 } from "./bot";
-export type { BotContext } from "./bot-context";
+export type { CaptchaService } from "./captcha-service";
+export type {
+  CaptchaChallenge,
+  CaptchaItem,
+  StartCaptchaChallengeParams,
+} from "./captcha";
 export type { DashboardGroupRow, DashboardStats } from "./dashboard";
 export type {
+  CaptchaChallengeRow,
   GroupFeatureRow,
   OpenCaseRow,
   PersistedFaq,
