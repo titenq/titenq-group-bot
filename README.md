@@ -29,9 +29,11 @@ Built with **TypeScript** and modern code standards, the project focuses on perf
 
 - **Dynamic FAQ System**: Admins register keyword → link pairs. Members trigger them directly or by replying to a question — no repeated answers, no chat pollution.
 
-- **Entry Captcha Protection (NEW)**: New members can be challenged with an interactive captcha before gaining permission to send messages in the group, reducing automated bot joins and spam waves.
+- **Entry Captcha Protection**: New members can be challenged with an interactive captcha before gaining permission to send messages in the group, reducing automated bot joins and spam waves.
 
-- **Custom Welcome Messages (NEW)**: Admins can configure a per-group welcome message with placeholders like `{name}`, `{username}`, and `{group}`, preview it inside the chat, and keep it synchronized with the group language when using the default template.
+- **Custom Welcome Messages**: Admins can configure a per-group welcome message with placeholders like `{name}`, `{username}`, and `{group}`, preview it inside the chat, and keep it synchronized with the group language when using the default template.
+
+- **Group Rules Button**: Admins can save a Telegram message link with the group rules and let members open it through a reusable inline button in commands and welcome flows.
 
 - **Media Gallery**: Photos and videos sent with `/media` are automatically forwarded to a dedicated public Telegram Channel. The original is deleted and a link is posted back in the group.
 
@@ -39,17 +41,17 @@ Built with **TypeScript** and modern code standards, the project focuses on perf
 
 - **Quick Reference Menu**: Any member can type `/menu` to see all available commands and features. The message auto-deletes after 1 minute.
 
-- **Per-Group Feature Toggles (NEW)**: Group admins can use `/features` to enable or disable specific bot features such as Captcha, FAQ, Gist, Media, Moderation, Trust, and Welcome for that specific group.
+- **Per-Group Feature Toggles**: Group admins can use `/features` to enable or disable specific bot features such as Captcha, FAQ, Gist, Media, Moderation, Rules, Trust, and Welcome for that specific group.
 
 - **Full Internationalization (i18n)**: All bot messages support 🇧🇷 Portuguese, 🇺🇸 English, and 🇪🇸 Spanish. Admins switch language per group with `/i18n`.
 
-- **Temporary Private Rooms (NEW)**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
+- **Temporary Private Rooms**: Create ephemeral 1-to-1 or group private chat rooms directly from the group via `/chat`. Perfect for discussing sensitive matters without leaving a trace in the main group. Rooms automatically expire.
 
 - **Resilient Persistence**: Voting sessions and infraction snapshots are persisted in SQLite — zero data loss on restart.
 
-- **Group Migration Protection (NEW)**: Automatically detects when a group chat is upgraded to a supergroup. Migrates all settings, FAQs, and active voting cases to the new Chat ID seamlessly.
+- **Group Migration Protection**: Automatically detects when a group chat is upgraded to a supergroup. Migrates all settings, FAQs, and active voting cases to the new Chat ID seamlessly.
 
-- **Trust Weight System (NEW)**: Admins can assign specific "vote weights" to trusted members. A trusted member's vote counts as multiple votes, allowing for faster moderation.
+- **Trust Weight System**: Admins can assign specific "vote weights" to trusted members. A trusted member's vote counts as multiple votes, allowing for faster moderation.
 
 - **Architecture by Design**: Clear separation between Persistence (`db.ts`), Handlers, and Atomic Logic (`helpers/`), with strict typing and integrated Oxc/Prettier linting.
 
@@ -217,6 +219,10 @@ Novos membros precisam concluir um captcha para liberar o envio de mensagens no 
 👋 Boas-vindas
 /welcome — Define a mensagem de boas-vindas personalizada do grupo e permite visualizar um preview (apenas admins, quando habilitado em /features).
 
+📜 Regras do Grupo
+/rules link_da_mensagem — Define o link da mensagem das regras do grupo (apenas admins).
+/rules — Exibe o botão com as regras.
+
 💬 Chat Temporário
 /chat — Cria uma nova sala de chat privada e temporária.
 /chat close — Encerra a sala atual (apenas quem criou a sala).
@@ -277,7 +283,7 @@ Alias available: `/feats`
 
 - **Default State**: Most features start as enabled (`ON`). `captcha` and `welcome` start disabled (`OFF`).
 - **Tracked Changes**: Each toggle stores the last admin who changed it and the last update timestamp in SQLite.
-- **Current Toggles**: `captcha`, `/faq`, `/gist`, `/media`, `ban`, `/trust`, and `welcome`.
+- **Current Toggles**: `captcha`, `/faq`, `/gist`, `/media`, `ban`, `/rules`, `/trust`, and `welcome`.
 - **Inline Controls**: The panel updates in place and includes a button to delete the panel message.
 
 ---
@@ -314,6 +320,24 @@ This section is a good place to add future screenshots of:
 - the `/welcome` setup panel
 - the preview message in the group
 - the final welcome message shown to a new member
+
+---
+
+## 📜 Group Rules
+
+The bot can store a Telegram message link containing the group rules and expose it through an inline button for members.
+
+- **Configuration Command**: Use `/rules <message_link>` to save or replace the rules message link for the current group.
+
+- **Display Command**: Use `/rules` without arguments to show the inline rules button in the chat.
+
+- **Removal Command**: Use `/rules rm` to remove the saved rules link.
+
+- **Feature Toggle**: The `/rules` button flow can be enabled or disabled by admins in `/features`.
+
+- **Welcome Integration**: If both `rules` and `welcome` are enabled and a rules link exists, the welcome preview and final welcome message include the rules button.
+
+- **Captcha Integration**: If `captcha`, `welcome`, and `rules` are enabled together, the post-captcha welcome message also includes the rules button.
 
 ---
 
