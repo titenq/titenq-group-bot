@@ -51,7 +51,7 @@
     "menu_welcome_title": "Bienvenida",
     "menu_welcome_desc": "`/welcome` — Define el mensaje de bienvenida personalizado del grupo y permite ver un preview en el chat (solo admins, cuando está habilitado en `/features`).",
     "menu_rules_title": "Reglas del Grupo",
-    "menu_rules_desc": "`/rules enlace_del_mensaje` — Define el enlace del mensaje con las reglas del grupo (solo admins). Usa `/rules` para mostrar el botón de reglas.",
+    "menu_rules_desc": "`/rules enlace_del_mensaje` — Define el enlace del mensaje con las reglas del grupo (solo admins).\n`/rules` — Muestra el botón de reglas.",
     "menu_chat_title": "Chat Temporal",
     "menu_chat_create": "`/chat` — Crea una nueva sala de chat privada y temporal.",
     "menu_chat_close": "`/chat close` — Cierra la sala actual (solo quien la creó).",

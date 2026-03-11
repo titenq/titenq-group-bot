@@ -474,7 +474,7 @@ welcomeHandlers.on(message("new_chat_members"), async (ctx, next) => {
 
   const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
   const rulesEnabled = await isGroupFeatureEnabled(ctx, GroupFeature.RULES);
-  
+
   const groupRules = rulesEnabled
     ? await getGroupRules(ctx.db, ctx.chat.id)
     : null;

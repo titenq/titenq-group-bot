@@ -241,7 +241,7 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
             ctx,
             GroupFeature.RULES,
           );
-          
+
           const groupRules = rulesEnabled
             ? await getGroupRules(ctx.db, ctx.chat.id)
             : null;

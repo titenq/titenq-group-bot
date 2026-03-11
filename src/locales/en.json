@@ -51,7 +51,7 @@
     "menu_welcome_title": "Welcome",
     "menu_welcome_desc": "`/welcome` — Set the custom welcome message for the group and preview it in the chat (admins only, when enabled in `/features`).",
     "menu_rules_title": "Group Rules",
-    "menu_rules_desc": "`/rules message_link` — Set the group rules message link (admins only). Use `/rules` to show the rules button.",
+    "menu_rules_desc": "`/rules message_link` — Set the group rules message link (admins only).\n`/rules` — Show the rules button.",
     "menu_chat_title": "Temporary Chat",
     "menu_chat_create": "`/chat` — Creates a new private and temporary chat room.",
     "menu_chat_close": "`/chat close` — Closes the current room (creator only).",
