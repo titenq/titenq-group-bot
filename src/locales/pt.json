@@ -27,6 +27,7 @@
     "features_feature_gist": "/gist",
     "features_feature_media": "/media",
     "features_feature_moderation": "ban",
+    "features_feature_rules": "/rules",
     "features_feature_trust": "/trust",
     "features_feature_welcome": "/welcome",
     "menu_title": "Comandos e Funcionalidades do Bot",

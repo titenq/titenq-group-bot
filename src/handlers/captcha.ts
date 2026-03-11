@@ -237,7 +237,14 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
         );
 
         if (welcomeMessage) {
-          const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
+          const rulesEnabled = await isGroupFeatureEnabled(
+            ctx,
+            GroupFeature.RULES,
+          );
+          
+          const groupRules = rulesEnabled
+            ? await getGroupRules(ctx.db, ctx.chat.id)
+            : null;
 
           await ctx.reply(
             buildWelcomeMessage({

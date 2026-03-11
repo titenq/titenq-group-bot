@@ -6,7 +6,9 @@ import {
   upsertGroupData,
   upsertGroupRules,
 } from "../db";
+import { GroupFeature } from "../enums";
 import {
+  isGroupFeatureEnabled,
   isAdmin,
   safeDelete,
   scheduleMessageCleanup,
@@ -35,6 +37,10 @@ rulesHandlers.command("rules", async (ctx) => {
   const argument = extractRulesArgument(ctx.message.text);
 
   if (!argument) {
+    if (!(await isGroupFeatureEnabled(ctx, GroupFeature.RULES))) {
+      return;
+    }
+
     const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
 
     if (!groupRules) {

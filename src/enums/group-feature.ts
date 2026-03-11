@@ -4,6 +4,7 @@ export const GroupFeature = {
   GIST: "gist",
   MEDIA: "media",
   MODERATION: "moderation",
+  RULES: "rules",
   TRUST: "trust",
   WELCOME: "welcome",
 } as const;

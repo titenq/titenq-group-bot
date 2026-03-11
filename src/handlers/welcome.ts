@@ -266,7 +266,11 @@ welcomeHandlers.action(/^welcome_preview_(\d+)$/i, async (ctx) => {
     username: ctx.from.username,
   });
 
-  const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
+  const rulesEnabled = await isGroupFeatureEnabled(ctx, GroupFeature.RULES);
+
+  const groupRules = rulesEnabled
+    ? await getGroupRules(ctx.db, ctx.chat.id)
+    : null;
 
   const previewMessage = await ctx.reply(previewText, {
     parse_mode: "HTML",
@@ -371,7 +375,7 @@ welcomeHandlers.action(/^welcome_edit_(\d+)$/i, async (ctx) => {
     ctx.db,
     ctx.chat.id,
   );
-  
+
   const currentTemplate =
     pendingDraft?.template ?? currentWelcomeMessage?.template;
 
@@ -469,7 +473,11 @@ welcomeHandlers.on(message("new_chat_members"), async (ctx, next) => {
   }
 
   const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
-  const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
+  const rulesEnabled = await isGroupFeatureEnabled(ctx, GroupFeature.RULES);
+  
+  const groupRules = rulesEnabled
+    ? await getGroupRules(ctx.db, ctx.chat.id)
+    : null;
 
   if (!welcomeMessage) {
     return next();
