@@ -22,5 +22,7 @@ export interface PendingWelcomeSetup {
 export interface PendingWelcomeDraft {
   adminId: number;
   chatId: number;
+  panelMessageId?: number;
+  previewMessageId?: number;
   template: string;
 }

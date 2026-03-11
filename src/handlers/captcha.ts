@@ -3,6 +3,7 @@ import { message } from "telegraf/filters";
 
 import { CAPTCHA_MAX_ATTEMPTS } from "../config/constants";
 import {
+  getGroupRules,
   getGroupWelcomeMessage,
   getCaptchaChallenge,
   updateCaptchaChallengeProgress,
@@ -20,6 +21,7 @@ import {
 } from "../helpers";
 import { BotContext } from "../interfaces";
 import { captchaChallengeMarkup } from "../markups/captcha-challenge";
+import { groupRulesMarkup } from "../markups/group-rules";
 
 export const captchaHandlers = new Composer<BotContext>();
 
@@ -235,6 +237,8 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
         );
 
         if (welcomeMessage) {
+          const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
+
           await ctx.reply(
             buildWelcomeMessage({
               groupTitle: "title" in ctx.chat ? ctx.chat.title : undefined,
@@ -244,6 +248,9 @@ captchaHandlers.action(/^captcha_select_(\d+)_([a-z_]+)$/i, async (ctx) => {
             }),
             {
               parse_mode: "HTML",
+              ...(groupRules
+                ? groupRulesMarkup(ctx.t, groupRules.messageLink)
+                : undefined),
             },
           );
         } else {

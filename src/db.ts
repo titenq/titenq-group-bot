@@ -19,6 +19,8 @@ import {
   GlobalBanHistoryRow,
   GroupFeatureRow,
   GroupFeatureState,
+  GroupRules,
+  GroupRulesRow,
   GroupWelcomeMessage,
   GroupWelcomeRow,
   OpenCaseRow,
@@ -181,6 +183,16 @@ export const initDatabase = async (dbPath: string): Promise<BotDb> => {
     CREATE TABLE IF NOT EXISTS group_welcome_messages (
       chat_id INTEGER PRIMARY KEY,
       template TEXT NOT NULL,
+      updated_by_user_id INTEGER,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
+    );
+  `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS group_rules (
+      chat_id INTEGER PRIMARY KEY,
+      message_link TEXT NOT NULL,
       updated_by_user_id INTEGER,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (chat_id) REFERENCES groups(chat_id) ON DELETE CASCADE
@@ -847,6 +859,82 @@ export const upsertGroupWelcomeMessage = async (
   return welcomeMessage;
 };
 
+export const getGroupRules = async (
+  db: BotDb,
+  chatId: number,
+): Promise<GroupRules | null> => {
+  const row = await db.get<GroupRulesRow>(
+    `
+      SELECT chat_id, message_link, updated_by_user_id, updated_at
+      FROM group_rules
+      WHERE chat_id = ?
+    `,
+    chatId,
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    chatId: row.chat_id,
+    messageLink: row.message_link,
+    updatedAt: row.updated_at ?? undefined,
+    updatedByUserId: row.updated_by_user_id ?? undefined,
+  };
+};
+
+export const upsertGroupRules = async (
+  db: BotDb,
+  chatId: number,
+  messageLink: string,
+  adminId: number,
+): Promise<GroupRules> => {
+  await db.run(
+    `
+      INSERT INTO group_rules (
+        chat_id,
+        message_link,
+        updated_by_user_id,
+        updated_at
+      )
+      VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(chat_id) DO UPDATE SET
+        message_link = excluded.message_link,
+        updated_by_user_id = excluded.updated_by_user_id,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    chatId,
+    messageLink,
+    adminId,
+  );
+
+  const groupRules = await getGroupRules(db, chatId);
+
+  if (!groupRules) {
+    throw new Error(
+      `[Database] Failed to load rules after upsert for chat ${chatId}`,
+    );
+  }
+
+  return groupRules;
+};
+
+export const removeGroupRules = async (
+  db: BotDb,
+  chatId: number,
+): Promise<boolean> => {
+  const result = await db.run(
+    `
+      DELETE FROM group_rules
+      WHERE chat_id = ?
+    `,
+    chatId,
+  );
+
+  return (result.changes ?? 0) > 0;
+};
+
 export const upsertCaptchaChallenge = async (
   db: BotDb,
   challenge: CaptchaChallenge,
@@ -1123,6 +1211,12 @@ export const migrateChatData = async (
 
     await db.run(
       "UPDATE group_welcome_messages SET chat_id = ? WHERE chat_id = ?",
+      newChatId,
+      oldChatId,
+    );
+
+    await db.run(
+      "UPDATE group_rules SET chat_id = ? WHERE chat_id = ?",
       newChatId,
       oldChatId,
     );

@@ -209,6 +209,9 @@ commandHandlers.command("menu", async (ctx) => {
     `👋 *${ctx.t("commands.menu_welcome_title")}*`,
     ctx.t("commands.menu_welcome_desc"),
     "",
+    `📜 *${ctx.t("commands.menu_rules_title")}*`,
+    ctx.t("commands.menu_rules_desc"),
+    "",
     `💬 *${ctx.t("commands.menu_chat_title")}*`,
     ctx.t("commands.menu_chat_create"),
     ctx.t("commands.menu_chat_close"),
@@ -288,6 +291,8 @@ commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
     });
   }
 
+  await ctx.answerCbQuery();
+
   await upsertGroupData(
     ctx.db,
     ctx.chat.id,
@@ -320,25 +325,10 @@ commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
 
   const features = await getGroupFeatures(ctx.db, ctx.chat.id);
 
-  const featureLabel = ctx.t(
-    `commands.features_feature_${updatedFeature.featureKey}`,
-  );
-
-  const featureStatus = updatedFeature.isEnabled
-    ? ctx.t("commands.features_status_on")
-    : ctx.t("commands.features_status_off");
-
   if (ctx.callbackQuery.message) {
     await ctx.editMessageText(buildFeaturesText(ctx), {
       parse_mode: "HTML",
       ...groupFeaturesMarkup(ctx.t, features),
     });
   }
-
-  await ctx.answerCbQuery(
-    ctx.t("commands.features_toggle_success", {
-      feature: featureLabel,
-      status: featureStatus,
-    }),
-  );
 });

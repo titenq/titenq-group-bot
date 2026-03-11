@@ -49,6 +49,8 @@
     "menu_captcha_desc": "New members must complete a captcha before sending messages in the group (when enabled by an admin in `/features`).",
     "menu_welcome_title": "Welcome",
     "menu_welcome_desc": "`/welcome` — Set the custom welcome message for the group and preview it in the chat (admins only, when enabled in `/features`).",
+    "menu_rules_title": "Group Rules",
+    "menu_rules_desc": "`/rules message_link` — Set the group rules message link (admins only). Use `/rules` to show the rules button.",
     "menu_chat_title": "Temporary Chat",
     "menu_chat_create": "`/chat` — Creates a new private and temporary chat room.",
     "menu_chat_close": "`/chat close` — Closes the current room (creator only).",
@@ -186,6 +188,7 @@
   "welcome": {
     "default_template": "Welcome, {name} {username}, to the group {group}!",
     "setup_prompt": "Your next message will become this group's welcome message.\n\nAvailable placeholders:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nExample:\n<code>Welcome, {name} {username}, to the group {group}!</code>",
+    "setup_prompt_with_current": "Your next message will replace this group's current welcome message.\n\nAvailable placeholders:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nCurrent welcome message:\n<code>{{template}}</code>",
     "saved": "Current feature status: <b>{{status}}</b>\nEnable or disable it in <code>/features</code>.",
     "preview_ready": "✅ Welcome message preview is ready.\n\n{{statusText}}\n\nCurrent template:\n<code>{{template}}</code>",
     "saved_confirmed": "✅ Welcome message saved.\n\n{{statusText}}\n\nCurrent template:\n<code>{{template}}</code>",
@@ -201,6 +204,14 @@
     "saved_success": "Welcome message saved.",
     "edit_started": "Send the new welcome message.",
     "cancelled": "Welcome setup cancelled."
+  },
+  "rules": {
+    "button_label": "📜 Read the group rules",
+    "saved": "Rules link saved successfully.",
+    "removed": "Rules link removed successfully.",
+    "reply_message": "Open the group rules using the button below.",
+    "invalid_link": "Send a valid Telegram message link. Example: /rules https://t.me/your_group/123",
+    "not_configured": "No rules link has been configured for this group yet."
   },
   "trust": {
     "error_no_reply_or_id": "❌ Reply to a message or provide the user ID.",

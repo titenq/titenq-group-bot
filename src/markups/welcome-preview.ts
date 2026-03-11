@@ -54,11 +54,22 @@ export const welcomeSetupMarkup = (
 export const welcomeGroupPreviewMarkup = (
   t: TFunction,
   adminId: number,
+  rulesMessageLink?: string,
 ): {
   reply_markup: InlineKeyboardMarkup;
 } => ({
   reply_markup: {
     inline_keyboard: [
+      ...(rulesMessageLink
+        ? [
+            [
+              {
+                text: t("rules.button_label"),
+                url: rulesMessageLink,
+              },
+            ],
+          ]
+        : []),
       [
         {
           text: t("welcome.save_button"),

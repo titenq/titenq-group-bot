@@ -49,6 +49,8 @@
     "menu_captcha_desc": "Los nuevos miembros deben completar un captcha para poder enviar mensajes en el grupo (cuando un admin lo habilita en `/features`).",
     "menu_welcome_title": "Bienvenida",
     "menu_welcome_desc": "`/welcome` — Define el mensaje de bienvenida personalizado del grupo y permite ver un preview en el chat (solo admins, cuando está habilitado en `/features`).",
+    "menu_rules_title": "Reglas del Grupo",
+    "menu_rules_desc": "`/rules enlace_del_mensaje` — Define el enlace del mensaje con las reglas del grupo (solo admins). Usa `/rules` para mostrar el botón de reglas.",
     "menu_chat_title": "Chat Temporal",
     "menu_chat_create": "`/chat` — Crea una nueva sala de chat privada y temporal.",
     "menu_chat_close": "`/chat close` — Cierra la sala actual (solo quien la creó).",
@@ -186,6 +188,7 @@
   "welcome": {
     "default_template": "Bienvenido, {name} {username}, al grupo {group}!",
     "setup_prompt": "Tu próximo mensaje será el mensaje de bienvenida de este grupo.\n\nPlaceholders disponibles:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nEjemplo:\n<code>Bienvenido, {name} {username}, al grupo {group}!</code>",
+    "setup_prompt_with_current": "Tu próximo mensaje reemplazará el mensaje de bienvenida actual de este grupo.\n\nPlaceholders disponibles:\n<code>{name}</code> <code>{username}</code> <code>{group}</code>\n\nMensaje de bienvenida actual:\n<code>{{template}}</code>",
     "saved": "Estado actual de la feature: <b>{{status}}</b>\nActívala o desactívala en <code>/features</code>.",
     "preview_ready": "✅ El preview del mensaje de bienvenida está listo.\n\n{{statusText}}\n\nTemplate actual:\n<code>{{template}}</code>",
     "saved_confirmed": "✅ Mensaje de bienvenida guardado.\n\n{{statusText}}\n\nTemplate actual:\n<code>{{template}}</code>",
@@ -201,6 +204,14 @@
     "saved_success": "Mensaje de bienvenida guardado.",
     "edit_started": "Envía el nuevo mensaje de bienvenida.",
     "cancelled": "Configuración de bienvenida cancelada."
+  },
+  "rules": {
+    "button_label": "📜 Leer las reglas del grupo",
+    "saved": "Enlace de reglas guardado con éxito.",
+    "removed": "Enlace de reglas eliminado con éxito.",
+    "reply_message": "Abre las reglas del grupo con el botón de abajo.",
+    "invalid_link": "Envía un enlace válido de un mensaje de Telegram. Ejemplo: /rules https://t.me/tu_grupo/123",
+    "not_configured": "Todavía no hay un enlace de reglas configurado para este grupo."
   },
   "trust": {
     "error_no_reply_or_id": "❌ Responde a un mensaje o informa el ID del usuario.",

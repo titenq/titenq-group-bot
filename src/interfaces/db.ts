@@ -74,6 +74,13 @@ export interface GroupFeatureRow {
   updated_at: string | null;
 }
 
+export interface GroupRulesRow {
+  chat_id: number;
+  message_link: string;
+  updated_at: string | null;
+  updated_by_user_id: number | null;
+}
+
 export interface CaptchaChallengeRow {
   attempts: number;
   available_item_keys_json: string;

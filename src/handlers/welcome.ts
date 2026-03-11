@@ -2,6 +2,7 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import {
+  getGroupRules,
   getGroupWelcomeMessage,
   upsertGroupData,
   upsertGroupWelcomeMessage,
@@ -19,6 +20,7 @@ import {
   PendingWelcomeDraft,
   PendingWelcomeSetup,
 } from "../interfaces";
+import { groupRulesMarkup } from "../markups/group-rules";
 import {
   welcomeDraftMarkup,
   welcomeGroupPreviewMarkup,
@@ -78,6 +80,13 @@ const sendWelcomeDraftMessage = async (
     },
   );
 
+  pendingWelcomeDrafts.set(buildPendingWelcomeKey(ctx.chat.id, adminId), {
+    adminId,
+    chatId: ctx.chat.id,
+    panelMessageId: statusMessage.message_id,
+    template,
+  });
+
   scheduleMessageCleanup({
     botMessageId: statusMessage.message_id,
     chatId: ctx.chat.id,
@@ -89,15 +98,23 @@ const sendWelcomeSetupPrompt = async (
   ctx: BotContext,
   adminId: number,
   triggerMessageId: number,
+  currentTemplate?: string,
 ): Promise<void> => {
   if (!ctx.chat || ctx.chat.type === "private") {
     return;
   }
 
-  const setupPrompt = await ctx.reply(ctx.t("welcome.setup_prompt"), {
-    parse_mode: "HTML",
-    ...welcomeSetupMarkup(ctx.t, adminId),
-  });
+  const setupPrompt = await ctx.reply(
+    currentTemplate
+      ? ctx.t("welcome.setup_prompt_with_current", {
+          template: currentTemplate,
+        })
+      : ctx.t("welcome.setup_prompt"),
+    {
+      parse_mode: "HTML",
+      ...welcomeSetupMarkup(ctx.t, adminId),
+    },
+  );
 
   pendingWelcomeSetups.set(buildPendingWelcomeKey(ctx.chat.id, adminId), {
     adminId,
@@ -134,18 +151,22 @@ welcomeHandlers.command("welcome", async (ctx) => {
       buildPendingWelcomeKey(ctx.chat.id, ctx.from.id),
     );
 
-    pendingWelcomeDrafts.set(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id), {
-      adminId: ctx.from.id,
-      chatId: ctx.chat.id,
-      template,
-    });
-
     await sendWelcomeDraftMessage(ctx, ctx.from.id, template);
 
     return;
   }
 
-  await sendWelcomeSetupPrompt(ctx, ctx.from.id, ctx.message.message_id);
+  const currentWelcomeMessage = await getGroupWelcomeMessage(
+    ctx.db,
+    ctx.chat.id,
+  );
+
+  await sendWelcomeSetupPrompt(
+    ctx,
+    ctx.from.id,
+    ctx.message.message_id,
+    currentWelcomeMessage?.template,
+  );
 });
 
 welcomeHandlers.on(message("text"), async (ctx, next) => {
@@ -201,11 +222,6 @@ welcomeHandlers.on(message("text"), async (ctx, next) => {
   }
 
   pendingWelcomeSetups.delete(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id));
-  pendingWelcomeDrafts.set(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id), {
-    adminId: ctx.from.id,
-    chatId: ctx.chat.id,
-    template,
-  });
 
   await safeDelete(ctx.telegram, ctx.chat.id, pendingSetup.promptMessageId);
   await safeDelete(ctx.telegram, ctx.chat.id, pendingSetup.triggerMessageId);
@@ -231,6 +247,7 @@ welcomeHandlers.action(/^welcome_preview_(\d+)$/i, async (ctx) => {
   const draft = pendingWelcomeDrafts.get(
     buildPendingWelcomeKey(ctx.chat.id, ctx.from.id),
   );
+
   const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
   const template = draft?.template ?? welcomeMessage?.template;
 
@@ -249,10 +266,19 @@ welcomeHandlers.action(/^welcome_preview_(\d+)$/i, async (ctx) => {
     username: ctx.from.username,
   });
 
+  const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
+
   const previewMessage = await ctx.reply(previewText, {
     parse_mode: "HTML",
-    ...welcomeGroupPreviewMarkup(ctx.t, ctx.from.id),
+    ...welcomeGroupPreviewMarkup(ctx.t, ctx.from.id, groupRules?.messageLink),
   });
+
+  if (draft) {
+    pendingWelcomeDrafts.set(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id), {
+      ...draft,
+      previewMessageId: previewMessage.message_id,
+    });
+  }
 
   scheduleMessageCleanup({
     botMessageId: previewMessage.message_id,
@@ -304,12 +330,12 @@ welcomeHandlers.action(/^welcome_save_(\d+)$/i, async (ctx) => {
   pendingWelcomeSetups.delete(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id));
   pendingWelcomeDrafts.delete(buildPendingWelcomeKey(ctx.chat.id, ctx.from.id));
 
-  if (ctx.callbackQuery.message) {
-    await safeDelete(
-      ctx.telegram,
-      ctx.chat.id,
-      ctx.callbackQuery.message.message_id,
-    );
+  if (draft.panelMessageId) {
+    await safeDelete(ctx.telegram, ctx.chat.id, draft.panelMessageId);
+  }
+
+  if (draft.previewMessageId) {
+    await safeDelete(ctx.telegram, ctx.chat.id, draft.previewMessageId);
   }
 
   if (pendingSetup) {
@@ -337,6 +363,18 @@ welcomeHandlers.action(/^welcome_edit_(\d+)$/i, async (ctx) => {
     return;
   }
 
+  const pendingDraft = pendingWelcomeDrafts.get(
+    buildPendingWelcomeKey(ctx.chat.id, ctx.from.id),
+  );
+
+  const currentWelcomeMessage = await getGroupWelcomeMessage(
+    ctx.db,
+    ctx.chat.id,
+  );
+  
+  const currentTemplate =
+    pendingDraft?.template ?? currentWelcomeMessage?.template;
+
   if (ctx.callbackQuery.message) {
     await safeDelete(
       ctx.telegram,
@@ -349,6 +387,7 @@ welcomeHandlers.action(/^welcome_edit_(\d+)$/i, async (ctx) => {
     ctx,
     ctx.from.id,
     ctx.callbackQuery.message?.message_id ?? 0,
+    currentTemplate,
   );
   await ctx.answerCbQuery(ctx.t("welcome.edit_started"));
 });
@@ -430,6 +469,7 @@ welcomeHandlers.on(message("new_chat_members"), async (ctx, next) => {
   }
 
   const welcomeMessage = await getGroupWelcomeMessage(ctx.db, ctx.chat.id);
+  const groupRules = await getGroupRules(ctx.db, ctx.chat.id);
 
   if (!welcomeMessage) {
     return next();
@@ -449,6 +489,9 @@ welcomeHandlers.on(message("new_chat_members"), async (ctx, next) => {
 
     await ctx.reply(text, {
       parse_mode: "HTML",
+      ...(groupRules
+        ? groupRulesMarkup(ctx.t, groupRules.messageLink)
+        : undefined),
     });
   }
 

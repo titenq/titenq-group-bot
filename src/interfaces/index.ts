@@ -17,6 +17,7 @@ export type { DashboardGroupRow, DashboardStats } from "./dashboard";
 export type {
   CaptchaChallengeRow,
   GroupFeatureRow,
+  GroupRulesRow,
   OpenCaseRow,
   PersistedFaq,
   PersistedGroup,
@@ -30,6 +31,7 @@ export type { GroupFeatureState } from "./group-feature";
 export type { MessageQueueService } from "./message-queue";
 export type { QueueJob } from "./queue-job";
 export type { Room, UserRateLimit } from "./room";
+export type { GroupRules } from "./rules";
 export type { ScheduleMessageCleanupParams } from "./schedule-message-cleanup";
 export type {
   SetChatMemberTagCallApi,
