@@ -2,6 +2,7 @@ export const GroupFeature = {
   CAPTCHA: "captcha",
   FAQ: "faq",
   GIST: "gist",
+  GLOBAL_BANS: "global_bans",
   MEDIA: "media",
   MODERATION: "moderation",
   RULES: "rules",

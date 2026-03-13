@@ -223,6 +223,9 @@ commandHandlers.command("menu", async (ctx) => {
     ctx.t("commands.menu_trust_remove"),
     ctx.t("commands.menu_trust_tag_note"),
     "",
+    `🌐 *${ctx.t("commands.menu_global_bans_title")}*`,
+    ctx.t("commands.menu_global_bans_desc"),
+    "",
     "",
     `*${ctx.t("commands.menu_auto_delete")}*`,
   ].join("\n");

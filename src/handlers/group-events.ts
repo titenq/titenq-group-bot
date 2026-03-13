@@ -2,7 +2,8 @@ import { Composer } from "telegraf";
 import { message } from "telegraf/filters";
 
 import { getGlobalBanCount, upsertGroupData } from "../db";
-import { GroupMemberStatus } from "../enums";
+import { GroupFeature, GroupMemberStatus } from "../enums";
+import { isGroupFeatureEnabled } from "../helpers";
 import { BotContext } from "../interfaces";
 import { globalBanAlertMarkup } from "../markups/global-ban-alert";
 
@@ -25,6 +26,10 @@ groupEventHandlers.on("my_chat_member", async (ctx) => {
 });
 
 groupEventHandlers.on(message("new_chat_members"), async (ctx) => {
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.GLOBAL_BANS))) {
+    return;
+  }
+
   const newMembers = ctx.message.new_chat_members;
 
   for (const member of newMembers) {

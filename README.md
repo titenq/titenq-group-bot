@@ -234,6 +234,10 @@ Novos membros precisam concluir um captcha para liberar o envio de mensagens no 
 /untrust [ID] — Remove o status de membro confiável e reseta o peso para 1 (apenas admins).
 Observação: a etiqueta VIP só será aplicada/removida no Telegram se o bot for admin e tiver a permissão de gerenciar etiquetas de membros.
 
+🌐 Global Bans
+Usuários com histórico de ban em outros grupos geram um alerta automático ao entrar no grupo.
+Admins podem ver os motivos anteriores, banir o usuário diretamente pelo alerta ou ignorar.
+
 
 Esta mensagem será apagada automaticamente em 1 minuto para não poluir o Grupo.
 ```
@@ -259,6 +263,21 @@ The core feature of the bot is the community-driven moderation flow to handle sp
    - `View voters` (Auditing).
    - `Ban user` (Definitive Action: **The bot will ONLY ban a user if an Admin explicitly clicks this button**).
    - `Ignore / Restore` (Retraction in case of a false positive, returning the message to the chat and **instantly unmuting** the user).
+
+---
+
+## 🌐 Global Bans
+
+The bot keeps a cross-group history of confirmed bans so that communities can react faster when a previously banned user appears again.
+
+- **Persistent Ban Registry**: Whenever an admin bans a user through the moderation flow or direct admin action, the bot stores the incident in SQLite with the group, admin, reason, message snapshot, and timestamp.
+- **Automatic Join Alerts**: When a new member joins a group, the bot checks whether that user already has ban history in other groups tracked by the same database.
+- **Admin Warning Panel**: If matches are found, the bot posts an alert with inline buttons so administrators can inspect the previous ban reasons before deciding what to do.
+- **History Review**: Admins can open a compact history summary showing where the user was banned, when it happened, and the recorded reason or offending message.
+- **One-Tap Ban Action**: If the risk is clear, an admin can ban the user directly from the alert panel without needing to wait for a new vote cycle.
+- **Local Control, Shared Memory**: The decision is always made per group by local admins, but the historical signal is shared across all groups that use the same bot database.
+
+This feature is especially useful for communities that deal with recurring spam accounts, ban evasion, or coordinated abuse across multiple Telegram groups.
 
 ---
 
