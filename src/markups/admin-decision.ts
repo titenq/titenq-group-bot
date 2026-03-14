@@ -15,10 +15,14 @@ export const adminDecisionMarkup = (
         t("markups.view_content"),
         `${Action.ADMIN_VIEW}|${chatId}|${targetMessageId}|${targetUserId}`,
       ),
+    ],
+    [
       Markup.button.callback(
         t("markups.view_voters"),
         `${Action.ADMIN_VOTERS}|${chatId}|${targetMessageId}|${targetUserId}`,
       ),
+    ],
+    [
       Markup.button.callback(
         t("markups.restore_message"),
         `${Action.ADMIN_RESTORE}|${chatId}|${targetMessageId}|${targetUserId}`,
@@ -29,6 +33,8 @@ export const adminDecisionMarkup = (
         t("markups.ban_user"),
         `${Action.ADMIN_BAN}|${chatId}|${targetMessageId}|${targetUserId}`,
       ),
+    ],
+    [
       Markup.button.callback(
         t("markups.ignore_report"),
         `${Action.ADMIN_IGNORE}|${chatId}|${targetMessageId}|${targetUserId}`,

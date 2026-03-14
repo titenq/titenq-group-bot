@@ -1,6 +1,8 @@
+import { TFunction } from "i18next";
 import { Telegram } from "telegraf";
 
 export const formatVoterDisplay = async (
+  t: TFunction,
   telegram: Telegram,
   chatId: number,
   voterId: number,
@@ -14,6 +16,6 @@ export const formatVoterDisplay = async (
 
     return `${member.user.first_name} (${voterId})`;
   } catch {
-    return `ID ${voterId}`;
+    return t("admin.voter_id_fallback", { voterId });
   }
 };

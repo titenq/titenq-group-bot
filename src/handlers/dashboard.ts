@@ -23,8 +23,8 @@ dashboardHandlers.command("dashboard", async (ctx) => {
 
   const stats = await getDashboardStats(ctx.db);
 
-  const now = new Date().toLocaleString("pt-BR", {
-    timeZone: "America/Sao_Paulo",
+  const now = new Date().toLocaleString("en-US", {
+    timeZone: "UTC",
     dateStyle: "short",
     timeStyle: "short",
   });
@@ -32,36 +32,50 @@ dashboardHandlers.command("dashboard", async (ctx) => {
   const groupLines = stats.groups.map((group) => {
     const flag = LANG_FLAG[group.language] ?? "🌐";
     const status = group.isActive ? "✅" : "❌";
-    const name = group.title ?? `ID ${group.chatId}`;
+    const name =
+      group.title ??
+      ctx.t("dashboard.group_id_fallback", {
+        chatId: group.chatId,
+      });
 
     return [
       `${status} *${name}*`,
-      `  ${flag} Idioma: ${group.language.toUpperCase()}`,
-      `  📨 Casos abertos: ${group.openCases}`,
-      `  📚 FAQs: ${group.totalFaqs}`,
-      `  🗓 Desde: ${group.addedAt.substring(0, 10)}`,
+      `  ${flag} ${ctx.t("dashboard.group_language", {
+        language: group.language.toUpperCase(),
+      })}`,
+      `  📨 ${ctx.t("dashboard.group_open_cases", {
+        count: group.openCases,
+      })}`,
+      `  📚 ${ctx.t("dashboard.group_total_faqs", {
+        count: group.totalFaqs,
+      })}`,
+      `  🗓 ${ctx.t("dashboard.group_added_since", {
+        date: group.addedAt.substring(0, 10),
+      })}`,
       "",
     ].join("\n");
   });
 
   const report = [
-    `📊 *Dashboard — TitenQ Group Bot*`,
+    `📊 *${ctx.t("dashboard.title")}*`,
     `🕐 ${now}`,
     "",
-    `*Grupos*`,
-    `• Total: ${stats.totalGroups}`,
-    `• Ativos: ${stats.activeGroups}`,
+    `*${ctx.t("dashboard.groups_section")}*`,
+    `• ${ctx.t("dashboard.groups_total", { count: stats.totalGroups })}`,
+    `• ${ctx.t("dashboard.groups_active", { count: stats.activeGroups })}`,
     "",
-    `*Votações*`,
-    `• Em andamento: ${stats.openVoteCases}`,
-    `• Aguardando admin: ${stats.pendingAdminCases}`,
-    `• Resolvidos: ${stats.resolvedCases}`,
-    `• Total de votos registrados: ${stats.totalVotes}`,
+    `*${ctx.t("dashboard.votes_section")}*`,
+    `• ${ctx.t("dashboard.votes_open", { count: stats.openVoteCases })}`,
+    `• ${ctx.t("dashboard.votes_pending_admin", {
+      count: stats.pendingAdminCases,
+    })}`,
+    `• ${ctx.t("dashboard.votes_resolved", { count: stats.resolvedCases })}`,
+    `• ${ctx.t("dashboard.votes_total", { count: stats.totalVotes })}`,
     "",
-    `*FAQs*`,
-    `• Total geral: ${stats.totalFaqs}`,
+    `*${ctx.t("dashboard.faqs_section")}*`,
+    `• ${ctx.t("dashboard.faqs_total", { count: stats.totalFaqs })}`,
     "",
-    `*Detalhes por Grupo*`,
+    `*${ctx.t("dashboard.group_details_section")}*`,
     ...groupLines,
   ].join("\n");
 

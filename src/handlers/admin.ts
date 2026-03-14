@@ -1,7 +1,7 @@
 import { Composer } from "telegraf";
 import { callbackQuery } from "telegraf/filters";
 
-import { addGlobalBan, updateVoteCaseStatus } from "../db";
+import { addGlobalBan, getUserTrustWeight, updateVoteCaseStatus } from "../db";
 import { Action, VoteCaseStatus } from "../enums";
 import {
   caseKey,
@@ -129,6 +129,21 @@ adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
       VoteCaseStatus.IGNORED,
     );
 
+    voteCase.status = VoteCaseStatus.IGNORED;
+
+    const callbackMessageId =
+      ctx.callbackQuery.message && "message_id" in ctx.callbackQuery.message
+        ? ctx.callbackQuery.message.message_id
+        : undefined;
+
+    await cleanupCaseMessages(
+      ctx.telegram,
+      voteCase,
+      callbackMessageId ? [callbackMessageId] : [],
+    );
+
+    ctx.voteCases.delete(caseKey(chatId, messageId));
+
     return;
   }
 
@@ -150,6 +165,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
         : `${callback.from.first_name} (${callback.from.id})`;
 
       const previewMessageId = await sendSnapshotMedia(
+        ctx.t,
         chatId,
         voteCase,
         ctx.t("admin.viewed_by", { viewedBy }),
@@ -207,27 +223,50 @@ adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
       return;
     }
 
-    const voterNames = await Promise.all(
-      voters.map((voterId) =>
-        formatVoterDisplay(ctx.telegram, chatId, voterId),
-      ),
+    const voterDisplays = await Promise.all(
+      voters.map(async (voterId) => {
+        const [name, weight] = await Promise.all([
+          formatVoterDisplay(ctx.t, ctx.telegram, chatId, voterId),
+          getUserTrustWeight(ctx.db, chatId, voterId),
+        ]);
+
+        return {
+          name,
+          weight,
+        };
+      }),
     );
 
-    const votersText = voterNames
-      .map((name, i) => `${i + 1}. ${name}`)
-      .join("\n");
+    const totalBaseExtraVotes = voterDisplays.reduce((total, voterDisplay) => {
+      return total + Math.max(voterDisplay.weight - 1, 0);
+    }, 0);
 
-    const extraVotesText =
-      voteCase.extraAdminVotes > 0
-        ? ctx.t("admin.voters_extra_admin", { count: voteCase.extraAdminVotes })
-        : "";
+    const remainingExtraVotes = Math.max(
+      voteCase.extraAdminVotes - totalBaseExtraVotes,
+      0,
+    );
+
+    const votersText = voterDisplays
+      .map((voterDisplay, i) => {
+        const displayWeight =
+          i === 0
+            ? voterDisplay.weight + remainingExtraVotes
+            : voterDisplay.weight;
+
+        return ctx.t("admin.voter_with_weight", {
+          index: i + 1,
+          name: voterDisplay.name,
+          weight: displayWeight,
+        });
+      })
+      .join("\n");
 
     await ctx.answerCbQuery(
       truncateText(
         ctx.t("admin.voters_list_title", {
           count: voters.length,
           list: votersText,
-        }) + extraVotesText,
+        }),
         ctx.maxAlertText,
       ),
       {
@@ -260,6 +299,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
       voteCase.snapshotMediaFileId
     ) {
       await sendSnapshotMedia(
+        ctx.t,
         chatId,
         voteCase,
         ctx.t("admin.restored_by_title", { restoredBy }),

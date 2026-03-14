@@ -23,6 +23,8 @@ import { adminDecisionMarkup } from "../markups/admin-decision";
 
 export const voteHandlers = new Composer<BotContext>();
 
+const ADMIN_TEST_BAN_KEYWORD = "testban";
+
 voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const incomingMessage = ctx.message;
 
@@ -38,8 +40,10 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const [commandToken, ...reasonParts] = rawText.split(/\s+/);
   const normalizedCommand = (commandToken ?? "").toLowerCase();
   const normalizedBanKeyword = ctx.banKeyword.toLowerCase();
+  const isAdminTestBanCommand = normalizedCommand === ADMIN_TEST_BAN_KEYWORD;
+  const isBanCommand = normalizedCommand === normalizedBanKeyword;
 
-  if (normalizedCommand !== normalizedBanKeyword) {
+  if (!isBanCommand && !isAdminTestBanCommand) {
     return;
   }
 
@@ -65,15 +69,16 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
     username: reply.from.username ?? undefined,
   };
 
-  const snapshot = getMessageSnapshot(reply);
+  const snapshot = getMessageSnapshot(ctx.t, reply);
   const chatId = ctx.chat.id;
   const targetMessageId = reply.message_id;
   const key = caseKey(chatId, targetMessageId);
   const voterId = incomingMessage.from.id;
   const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
   const isAdminUser = isAdmin(voterMember);
+  const shouldApplyAdminTestVotes = isAdminUser && isAdminTestBanCommand;
 
-  if (isAdminUser) {
+  if (isAdminUser && !shouldApplyAdminTestVotes) {
     try {
       await ctx.telegram.banChatMember(chatId, targetUser.id);
     } catch (error) {
@@ -166,9 +171,14 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
 
   if (!current.voters.has(voterId)) {
     const weight = await getUserTrustWeight(ctx.db, chatId, voterId);
+    const extraVotesFromWeight = weight > 1 ? weight - 1 : 0;
+    const extraVotesFromAdminTestBan = shouldApplyAdminTestVotes
+      ? ctx.requiredVotes - 1
+      : 0;
 
-    if (weight > 1) {
-      current.extraAdminVotes += weight - 1;
+    if (extraVotesFromWeight > 0 || extraVotesFromAdminTestBan > 0) {
+      current.extraAdminVotes +=
+        extraVotesFromWeight + extraVotesFromAdminTestBan;
     }
 
     current.voters.add(voterId);
