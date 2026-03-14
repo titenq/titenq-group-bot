@@ -40,7 +40,7 @@
     "menu_faq_remove": "`/faq rm palabra` — Elimina un FAQ (solo admins).",
     "menu_faq_trigger": "Responde a un mensaje con `/faq palabra-clave` para activar el FAQ correspondiente.",
     "menu_media_title": "Galería de Medios",
-    "menu_media_desc": "Envía una foto o vídeo con la leyenda `/media`. El medio se guardará en la Galería oficial y el Bot publicará el enlace en el grupo.",
+    "menu_media_desc": "Envía una foto o vídeo con la leyenda `/media`. También puedes responder a un mensaje enviando un medio con la leyenda `/media`. El medio se guardará en la Galería oficial y el Bot publicará el enlace en el grupo.",
     "menu_gist_title": "GitHub Gist",
     "menu_gist_desc": "`/gist lenguaje código` — Crea un Gist público en GitHub y publica el enlace en el grupo.",
     "menu_lang_title": "Idioma",
@@ -50,7 +50,7 @@
     "menu_captcha_title": "Captcha de Entrada",
     "menu_captcha_desc": "Los nuevos miembros deben completar un captcha para poder enviar mensajes en el grupo (cuando un admin lo habilita en `/features`).",
     "menu_welcome_title": "Bienvenida",
-    "menu_welcome_desc": "`/welcome` — Define el mensaje de bienvenida personalizado del grupo y permite ver un preview en el chat (solo admins, cuando está habilitado en `/features`).",
+    "menu_welcome_desc": "Envía `/welcome` para iniciar la configuración del mensaje de bienvenida del grupo (solo admins, cuando está habilitado en `/features`).\nEl bot mostrará los placeholders disponibles: `{name}`, `{username}` y `{group}`.\nTu próximo mensaje será usado como mensaje de bienvenida.\nDespués de eso, el bot mostrará los botones para Vista previa, Editar, Cancelar o Guardar.",
     "menu_rules_title": "Reglas del Grupo",
     "menu_rules_desc": "`/rules enlace_del_mensaje` — Define el enlace del mensaje con las reglas del grupo (solo admins).\n`/rules` — Muestra el botón de reglas.",
     "menu_chat_title": "Chat Temporal",
@@ -130,6 +130,7 @@
   },
   "media": {
     "attribution": "Enviado por: {{authorName}}\nDe: {{chatTitle}}",
+    "attribution_linked": "Enviado por: {{authorName}}\nDe: <a href=\"{{postLink}}\">{{chatTitle}}</a>",
     "success_posted": "📸 Medio publicado por {{authorName}} con éxito en la galería oficial.\n\n🔗 <a href=\"{{postLink}}\">Acceder al Medio</a>",
     "error_forwarding": "❌ Ocurrió un error al enviar tu medio a nuestro Canal Galería. Revisa la consola del Bot."
   },
@@ -240,6 +241,10 @@
     "history_title": "Historial de baneos de {{userId}}:",
     "history_item": "\nGrupo: {{groupName}}\nMotivo: {{reason}}\nMensaje: \"{{messageText}}\"\nFecha: {{date}}",
     "admin_only_button": "Solo los administradores pueden usar este botón.",
-    "confirmed_ban": "✅ Usuario {{name}} baneado y alerta eliminada."
+    "confirmed_ban": "✅ Usuario {{name}} baneado y alerta eliminada.",
+    "unban_failed": "❌ No se pudo desbanear a {{username}}. Verifica si el bot tiene permiso para banear y desbanear usuarios.",
+    "unban_invalid_username": "❌ Usa el comando con el formato `/unban @nombre_de_usuario`.",
+    "unban_success": "✅ {{username}} fue desbaneado y se eliminaron {{count}} registro(s) de global ban.",
+    "unban_user_not_found": "ℹ️ No encontré historial de global ban para {{username}}."
   }
 }

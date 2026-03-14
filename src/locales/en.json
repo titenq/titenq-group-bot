@@ -40,7 +40,7 @@
     "menu_faq_remove": "`/faq rm keyword` — Remove a FAQ (admins only).",
     "menu_faq_trigger": "Reply to a message with `/faq keyword` to trigger the corresponding FAQ.",
     "menu_media_title": "Media Gallery",
-    "menu_media_desc": "Send a photo or video with the caption `/media`. The media will be saved in the official Gallery and the Bot will post the link in the group.",
+    "menu_media_desc": "Send a photo or video with the caption `/media`. You can also reply to a message by sending a media with the caption `/media`. The media will be saved in the official Gallery and the Bot will post the link in the group.",
     "menu_gist_title": "GitHub Gist",
     "menu_gist_desc": "`/gist language code` — Creates a public Gist on GitHub and posts the link in the group.",
     "menu_lang_title": "Language",
@@ -50,7 +50,7 @@
     "menu_captcha_title": "Join Captcha",
     "menu_captcha_desc": "New members must complete a captcha before sending messages in the group (when enabled by an admin in `/features`).",
     "menu_welcome_title": "Welcome",
-    "menu_welcome_desc": "`/welcome` — Set the custom welcome message for the group and preview it in the chat (admins only, when enabled in `/features`).",
+    "menu_welcome_desc": "Send `/welcome` to start configuring the group's welcome message (admins only, when enabled in `/features`).\nThe bot will show the available placeholders: `{name}`, `{username}`, and `{group}`.\nYour next message will be used as the welcome message.\nAfter that, the bot will show buttons to Preview, Edit, Cancel, or Save.",
     "menu_rules_title": "Group Rules",
     "menu_rules_desc": "`/rules message_link` — Set the group rules message link (admins only).\n`/rules` — Show the rules button.",
     "menu_chat_title": "Temporary Chat",
@@ -130,6 +130,7 @@
   },
   "media": {
     "attribution": "Sent by: {{authorName}}\nFrom: {{chatTitle}}",
+    "attribution_linked": "Sent by: {{authorName}}\nFrom: <a href=\"{{postLink}}\">{{chatTitle}}</a>",
     "success_posted": "📸 Media successfully posted by {{authorName}} to the official gallery.\n\n🔗 <a href=\"{{postLink}}\">Access Media</a>",
     "error_forwarding": "❌ An error occurred while sending your media to our Gallery Channel. Check the Bot console."
   },
@@ -240,6 +241,10 @@
     "history_title": "Ban history for {{userId}}:",
     "history_item": "\nGroup: {{groupName}}\nReason: {{reason}}\nMessage: \"{{messageText}}\"\nData: {{date}}",
     "admin_only_button": "Only administrators can use this button.",
-    "confirmed_ban": "✅ User {{name}} banned and alert removed."
+    "confirmed_ban": "✅ User {{name}} banned and alert removed.",
+    "unban_failed": "❌ Could not unban {{username}}. Check whether the bot has permission to ban and unban users.",
+    "unban_invalid_username": "❌ Use the command in the format `/unban @username`.",
+    "unban_success": "✅ {{username}} was unbanned and {{count}} global ban record(s) were removed.",
+    "unban_user_not_found": "ℹ️ No global ban history was found for {{username}}."
   }
 }

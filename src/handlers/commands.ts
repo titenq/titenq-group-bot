@@ -3,8 +3,10 @@ import { Composer } from "telegraf";
 import { callbackQuery, message } from "telegraf/filters";
 
 import {
+  getGlobalBanUserByUsername,
   getGroupFeatures,
   getGroupWelcomeMessage,
+  removeGlobalBansByUserId,
   toggleGroupFeature,
   upsertGroupData,
   upsertGroupWelcomeMessage,
@@ -25,6 +27,7 @@ const isDefaultWelcomeTemplate = (
   const currentLanguageTemplate = i18next.getFixedT(currentLanguage)(
     "welcome.default_template",
   );
+
   const knownDefaultTemplates = SUPPORTED_LANGUAGES.map((languageCode) => {
     return i18next.getFixedT(languageCode)("welcome.default_template");
   });
@@ -41,6 +44,95 @@ const buildFeaturesText = (ctx: BotContext) => {
     "",
     ctx.t("commands.features_description"),
   ].join("\n");
+};
+
+const extractUsernameArgument = (text: string): string | null => {
+  const [, rawUsername] = text.trim().split(/\s+/);
+
+  if (!rawUsername || !rawUsername.startsWith("@")) {
+    return null;
+  }
+
+  const username = rawUsername.slice(1).trim();
+  const validUsernamePattern = /^[a-zA-Z0-9_]{5,32}$/;
+
+  if (!validUsernamePattern.test(username)) {
+    return null;
+  }
+
+  return username;
+};
+
+const buildMenuText = (ctx: BotContext): string => {
+  const { banKeyword, requiredVotes } = ctx;
+
+  return [
+    `🤖 *${ctx.t("commands.menu_title")}*`,
+    "",
+    `🚫 *${ctx.t("commands.menu_moderation_title")}*`,
+    ctx.t("commands.menu_moderation_desc", { banKeyword, requiredVotes }),
+    "",
+    `📚 *${ctx.t("commands.menu_faq_title")}*`,
+    ctx.t("commands.menu_faq_add"),
+    ctx.t("commands.menu_faq_list"),
+    ctx.t("commands.menu_faq_remove"),
+    ctx.t("commands.menu_faq_trigger"),
+    "",
+    `🖼 *${ctx.t("commands.menu_media_title")}*`,
+    ctx.t("commands.menu_media_desc"),
+    "",
+    `💻 *${ctx.t("commands.menu_gist_title")}*`,
+    ctx.t("commands.menu_gist_desc"),
+    "",
+    `🌐 *${ctx.t("commands.menu_lang_title")}*`,
+    ctx.t("commands.menu_lang_desc"),
+    "",
+    `⚙️ *${ctx.t("commands.menu_features_title")}*`,
+    ctx.t("commands.menu_features_desc"),
+    "",
+    `🧩 *${ctx.t("commands.menu_captcha_title")}*`,
+    ctx.t("commands.menu_captcha_desc"),
+    "",
+    `👋 *${ctx.t("commands.menu_welcome_title")}*`,
+    ctx.t("commands.menu_welcome_desc"),
+    "",
+    `📜 *${ctx.t("commands.menu_rules_title")}*`,
+    ctx.t("commands.menu_rules_desc"),
+    "",
+    `💬 *${ctx.t("commands.menu_chat_title")}*`,
+    ctx.t("commands.menu_chat_create"),
+    ctx.t("commands.menu_chat_close"),
+    ctx.t("commands.menu_chat_exit"),
+    "",
+    `🛡 *${ctx.t("commands.menu_trust_title")}*`,
+    ctx.t("commands.menu_trust_add", { banKeyword, requiredVotes }),
+    ctx.t("commands.menu_trust_list"),
+    ctx.t("commands.menu_trust_remove"),
+    ctx.t("commands.menu_trust_tag_note"),
+    "",
+    `🌐 *${ctx.t("commands.menu_global_bans_title")}*`,
+    ctx.t("commands.menu_global_bans_desc"),
+    "",
+    "",
+    `*${ctx.t("commands.menu_auto_delete")}*`,
+  ].join("\n");
+};
+
+const showMenu = async (ctx: BotContext) => {
+  if (!ctx.chat || !ctx.message) {
+    return;
+  }
+
+  const menuReply = await ctx.reply(buildMenuText(ctx), {
+    parse_mode: "Markdown",
+  });
+
+  scheduleMessageCleanup({
+    botMessageId: menuReply.message_id,
+    chatId: ctx.chat.id,
+    telegram: ctx.telegram,
+    triggerMessageId: ctx.message.message_id,
+  });
 };
 
 const showFeaturesPanel = async (ctx: BotContext) => {
@@ -70,7 +162,14 @@ const showFeaturesPanel = async (ctx: BotContext) => {
   });
 };
 
-commandHandlers.start(async (ctx) => {
+commandHandlers.command("start", async (ctx, next) => {
+  const commandParts = ctx.message.text.trim().split(/\s+/);
+  const startPayload = commandParts[1];
+
+  if (startPayload) {
+    return next();
+  }
+
   await ctx.reply(
     ctx.t("commands.start_message", {
       banKeyword: ctx.banKeyword,
@@ -79,14 +178,7 @@ commandHandlers.start(async (ctx) => {
   );
 });
 
-commandHandlers.help(async (ctx) => {
-  await ctx.reply(
-    ctx.t("commands.help_message", {
-      banKeyword: ctx.banKeyword,
-      requiredVotes: ctx.requiredVotes,
-    }),
-  );
-});
+commandHandlers.command("help", showMenu);
 
 commandHandlers.on(message("text"), async (ctx, next) => {
   if (!ctx.chat || ctx.chat.type === "private") {
@@ -176,69 +268,96 @@ commandHandlers.action(/^i18n_set_(.+)$/, async (ctx) => {
 
 commandHandlers.command(["features", "feats"], showFeaturesPanel);
 
-commandHandlers.command("menu", async (ctx) => {
-  const { banKeyword, requiredVotes } = ctx;
+commandHandlers.command("unban", async (ctx) => {
+  if (!ctx.chat || ctx.chat.type === "private" || !ctx.message) {
+    return;
+  }
 
-  const menuText = [
-    `🤖 *${ctx.t("commands.menu_title")}*`,
-    "",
-    `🚫 *${ctx.t("commands.menu_moderation_title")}*`,
-    ctx.t("commands.menu_moderation_desc", { banKeyword, requiredVotes }),
-    "",
-    `📚 *${ctx.t("commands.menu_faq_title")}*`,
-    ctx.t("commands.menu_faq_add"),
-    ctx.t("commands.menu_faq_list"),
-    ctx.t("commands.menu_faq_remove"),
-    ctx.t("commands.menu_faq_trigger"),
-    "",
-    `🖼 *${ctx.t("commands.menu_media_title")}*`,
-    ctx.t("commands.menu_media_desc"),
-    "",
-    `💻 *${ctx.t("commands.menu_gist_title")}*`,
-    ctx.t("commands.menu_gist_desc"),
-    "",
-    `🌐 *${ctx.t("commands.menu_lang_title")}*`,
-    ctx.t("commands.menu_lang_desc"),
-    "",
-    `⚙️ *${ctx.t("commands.menu_features_title")}*`,
-    ctx.t("commands.menu_features_desc"),
-    "",
-    `🧩 *${ctx.t("commands.menu_captcha_title")}*`,
-    ctx.t("commands.menu_captcha_desc"),
-    "",
-    `👋 *${ctx.t("commands.menu_welcome_title")}*`,
-    ctx.t("commands.menu_welcome_desc"),
-    "",
-    `📜 *${ctx.t("commands.menu_rules_title")}*`,
-    ctx.t("commands.menu_rules_desc"),
-    "",
-    `💬 *${ctx.t("commands.menu_chat_title")}*`,
-    ctx.t("commands.menu_chat_create"),
-    ctx.t("commands.menu_chat_close"),
-    ctx.t("commands.menu_chat_exit"),
-    "",
-    `🛡 *${ctx.t("commands.menu_trust_title")}*`,
-    ctx.t("commands.menu_trust_add", { banKeyword, requiredVotes }),
-    ctx.t("commands.menu_trust_list"),
-    ctx.t("commands.menu_trust_remove"),
-    ctx.t("commands.menu_trust_tag_note"),
-    "",
-    `🌐 *${ctx.t("commands.menu_global_bans_title")}*`,
-    ctx.t("commands.menu_global_bans_desc"),
-    "",
-    "",
-    `*${ctx.t("commands.menu_auto_delete")}*`,
-  ].join("\n");
+  const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
-  const menuReply = await ctx.reply(menuText, { parse_mode: "Markdown" });
+  if (!isAdmin(actor)) {
+    return;
+  }
+
+  const commandText = "text" in ctx.message ? ctx.message.text : "";
+  const username = extractUsernameArgument(commandText);
+
+  if (!username) {
+    const errorMessage = await ctx.reply(
+      ctx.t("global_ban.unban_invalid_username"),
+    );
+
+    scheduleMessageCleanup({
+      botMessageId: errorMessage.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
+
+    return;
+  }
+
+  const globalBanUser = await getGlobalBanUserByUsername(ctx.db, username);
+
+  if (!globalBanUser) {
+    const errorMessage = await ctx.reply(
+      ctx.t("global_ban.unban_user_not_found", { username: `@${username}` }),
+    );
+
+    scheduleMessageCleanup({
+      botMessageId: errorMessage.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
+
+    return;
+  }
+
+  try {
+    await ctx.telegram.unbanChatMember(ctx.chat.id, globalBanUser.user_id);
+  } catch (error) {
+    console.error(
+      `[Commands] Failed to unban user ${globalBanUser.user_id}: ${
+        error instanceof Error ? error.message : "unknown error"
+      }`,
+    );
+
+    const errorMessage = await ctx.reply(
+      ctx.t("global_ban.unban_failed", { username: `@${username}` }),
+    );
+
+    scheduleMessageCleanup({
+      botMessageId: errorMessage.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+      triggerMessageId: ctx.message.message_id,
+    });
+
+    return;
+  }
+
+  const removedEntries = await removeGlobalBansByUserId(
+    ctx.db,
+    globalBanUser.user_id,
+  );
+
+  const successMessage = await ctx.reply(
+    ctx.t("global_ban.unban_success", {
+      count: removedEntries,
+      username: `@${username}`,
+    }),
+  );
 
   scheduleMessageCleanup({
-    botMessageId: menuReply.message_id,
+    botMessageId: successMessage.message_id,
     chatId: ctx.chat.id,
     telegram: ctx.telegram,
     triggerMessageId: ctx.message.message_id,
   });
 });
+
+commandHandlers.command("menu", showMenu);
 
 commandHandlers.on(callbackQuery("data"), async (ctx, next) => {
   if (!ctx.chat || ctx.chat.type === "private") {

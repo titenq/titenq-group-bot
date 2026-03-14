@@ -40,7 +40,7 @@
     "menu_faq_remove": "`/faq rm palavra` — Remove um FAQ (apenas admins).",
     "menu_faq_trigger": "Responda a uma mensagem com `/faq palavra-chave` para acionar o FAQ correspondente.",
     "menu_media_title": "Galeria de Mídia",
-    "menu_media_desc": "Envie uma foto ou vídeo com a legenda `/media`. A mídia será salva na Galeria oficial e o Bot retornará o link da postagem no grupo.",
+    "menu_media_desc": "Envie uma foto ou vídeo com a legenda `/media`. Você também pode responder a uma mensagem enviando uma mídia com a legenda `/media`. A mídia será salva na Galeria oficial e o Bot retornará o link da postagem no grupo.",
     "menu_gist_title": "GitHub Gist",
     "menu_gist_desc": "`/gist linguagem código` — Cria um Gist público no GitHub e envia o link no grupo.",
     "menu_lang_title": "Idioma",
@@ -50,7 +50,7 @@
     "menu_captcha_title": "Captcha de Entrada",
     "menu_captcha_desc": "Novos membros precisam concluir um captcha para liberar o envio de mensagens no grupo (quando habilitado por um admin em `/features`).",
     "menu_welcome_title": "Boas-vindas",
-    "menu_welcome_desc": "`/welcome` — Define a mensagem de boas-vindas personalizada do grupo e permite visualizar um preview (apenas admins, quando habilitado em `/features`).",
+    "menu_welcome_desc": "Envie `/welcome` para iniciar a configuração da mensagem de boas-vindas do grupo (apenas admins, quando habilitado em `/features`).\nO bot mostrará os placeholders disponíveis: `{name}`, `{username}` e `{group}`.\nA sua próxima mensagem será usada como mensagem de boas-vindas.\nDepois disso, o bot exibirá os botões para Visualizar, Editar, Cancelar ou Salvar.",
     "menu_rules_title": "Regras do Grupo",
     "menu_rules_desc": "`/rules link_da_mensagem` — Define o link da mensagem das regras do grupo (apenas admins).\n`/rules` — Exibe o botão com as regras.",
     "menu_chat_title": "Chat Temporário",
@@ -131,6 +131,7 @@
   },
   "media": {
     "attribution": "Enviado por: {{authorName}}\nDe: {{chatTitle}}",
+    "attribution_linked": "Enviado por: {{authorName}}\nDe: <a href=\"{{postLink}}\">{{chatTitle}}</a>",
     "success_posted": "📸 Mídia postada por {{authorName}} com sucesso na galeria oficial.\n\n🔗 <a href=\"{{postLink}}\">Acessar Mídia</a>",
     "error_forwarding": "❌ Ocorreu um erro ao enviar a sua mídia pro nosso Canal Galeria. Confira o console do Bot."
   },
@@ -241,6 +242,10 @@
     "history_title": "Histórico de banimentos de {{userId}}:",
     "history_item": "\nGrupo: {{groupName}}\nMotivo: {{reason}}\nMensagem: \"{{messageText}}\"\nData: {{date}}",
     "admin_only_button": "Apenas administradores podem usar este botão.",
-    "confirmed_ban": "✅ Usuário {{name}} banido e alerta removido."
+    "confirmed_ban": "✅ Usuário {{name}} banido e alerta removido.",
+    "unban_failed": "❌ Não foi possível desbanir {{username}}. Verifique se o bot tem permissão para banir e desbanir usuários.",
+    "unban_invalid_username": "❌ Use o comando no formato `/unban @nome_do_usuario`.",
+    "unban_success": "✅ {{username}} foi desbanido e {{count}} registro(s) de global ban foram removidos.",
+    "unban_user_not_found": "ℹ️ Não encontrei histórico de global ban para {{username}}."
   }
 }

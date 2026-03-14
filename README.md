@@ -35,7 +35,7 @@ Built with **TypeScript** and modern code standards, the project focuses on perf
 
 - **Group Rules Button**: Admins can save a Telegram message link with the group rules and let members open it through a reusable inline button in commands and welcome flows.
 
-- **Media Gallery**: Photos and videos sent with `/media` are automatically forwarded to a dedicated public Telegram Channel. The original is deleted and a link is posted back in the group.
+- **Media Gallery**: Photos and videos sent with the caption `/media` are automatically forwarded to a dedicated public Telegram Channel. You can also reply to a message by sending a new media with the caption `/media`. The original is deleted and a link is posted back in the group.
 
 - **GitHub Gist Integration**: Members can share code with `/gist <language> <code>`. The bot creates a public Gist on GitHub, deletes the original message, and posts the generated link back to the group.
 
@@ -201,7 +201,8 @@ silenciado e os admins são notificados.
 Responda a uma mensagem com /faq palavra-chave para acionar o FAQ correspondente.
 
 🖼 Galeria de Mídia
-Envie uma foto ou vídeo com a legenda /media. A mídia será salva na
+Envie uma foto ou vídeo com a legenda /media. Você também pode responder
+a uma mensagem enviando uma mídia com a legenda /media. A mídia será salva na
 Galeria oficial e o Bot retornará o link da postagem no grupo.
 
 💻 GitHub Gist
@@ -217,7 +218,10 @@ Galeria oficial e o Bot retornará o link da postagem no grupo.
 Novos membros precisam concluir um captcha para liberar o envio de mensagens no grupo (quando habilitado por um admin em /features).
 
 👋 Boas-vindas
-/welcome — Define a mensagem de boas-vindas personalizada do grupo e permite visualizar um preview (apenas admins, quando habilitado em /features).
+Envie /welcome para iniciar a configuração da mensagem de boas-vindas do grupo (apenas admins, quando habilitado em /features).
+O bot mostrará os placeholders disponíveis: {name}, {username} e {group}.
+A sua próxima mensagem será usada como mensagem de boas-vindas.
+Depois disso, o bot exibirá os botões para Visualizar, Editar, Cancelar ou Salvar.
 
 📜 Regras do Grupo
 /rules link_da_mensagem — Define o link da mensagem das regras do grupo (apenas admins).
@@ -327,9 +331,10 @@ This is one of the recommended features to enable in communities that receive fr
 The bot can send a configurable welcome message to new members after they join the group.
 
 - **Activation**: The feature starts disabled by default and must be enabled by an admin in `/features`.
-- **Configuration Command**: Use `/welcome` to start the setup flow, or send `/welcome <message>` directly.
-- **Supported Placeholders**: `{name}`, `{username}`, and `{group}`.
-- **Preview Flow**: Admins can preview the message in the group before saving, edit it, or cancel the setup.
+- **Setup Flow**: Use `/welcome` to start the welcome message setup for the group.
+- **Placeholders**: The bot shows the available placeholders: `{name}`, `{username}`, and `{group}`.
+- **Next Message Capture**: The admin's next message becomes the welcome message draft.
+- **Review Buttons**: After that, the bot shows buttons to Preview, Edit, Cancel, or Save.
 - **Default Template**: If an admin enables `welcome` in `/features` before configuring a custom message, the bot stores the default localized welcome template automatically.
 - **Language Sync**: If the saved welcome message is still the default template, changing the group language with `/i18n` updates the welcome template to the new locale automatically.
 - **Captcha Integration**: If both `captcha` and `welcome` are enabled, the welcome message is sent only after the user completes the captcha successfully.
@@ -386,7 +391,7 @@ The bot can forward photos and videos sent in a group to a dedicated public Tele
 MEDIA_CHANNEL_TARGET=@YourChannelUsername
 ```
 
-**How to use**: Send a photo or video with the caption starting with `/media` in the group. The bot will:
+**How to use**: Send a photo or video with the caption starting with `/media` in the group. You can also reply to any message by sending a new photo or video with the caption `/media`. The bot will:
 
 1. Copy the media to the configured channel, crediting the original author and group name.
 2. Delete the original message from the group.

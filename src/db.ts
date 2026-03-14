@@ -24,6 +24,8 @@ export {
   addGlobalBan,
   getGlobalBanCount,
   getGlobalBanHistory,
+  getGlobalBanUserByUsername,
+  removeGlobalBansByUserId,
 } from "./db/global-bans";
 export { loadGroups, upsertGroupData } from "./db/groups";
 export { migrateChatData } from "./db/migrations";
