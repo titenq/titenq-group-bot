@@ -1,4 +1,5 @@
 export const Action = {
+  VOTE_CAST: "vote_cast",
   ADMIN_BAN: "admin_ban",
   ADMIN_IGNORE: "admin_ignore",
   ADMIN_VIEW: "admin_view",

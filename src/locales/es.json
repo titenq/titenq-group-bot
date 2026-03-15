@@ -89,6 +89,10 @@
   "vote": {
     "use_ban_reply": "Usa {{banKeyword}} respondiendo al mensaje sospechoso.",
     "progress": "{{banKeyword}} ({{votes}} de {{requiredVotes}})",
+    "button": "🚫 {{banKeyword}} ({{votes}} de {{requiredVotes}})",
+    "registered": "Voto registrado.",
+    "already_voted": "Ya votaste en este caso.",
+    "closed": "Esta votación ya fue cerrada.",
     "admin_decision": "Mensaje eliminado por votación de la comunidad.\nAutor sospechoso: {{firstName}} ({{username}}) ({{userId}})\nVotos finales: {{votes}}/{{requiredVotes}}\n{{adminNotice}}\nDecisión de admin:"
   },
   "admin": {

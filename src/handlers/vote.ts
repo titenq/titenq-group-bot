@@ -1,5 +1,5 @@
 import { Composer } from "telegraf";
-import { message } from "telegraf/filters";
+import { callbackQuery, message } from "telegraf/filters";
 
 import {
   addGlobalBan,
@@ -8,7 +8,7 @@ import {
   upsertVoteCase,
   updateVoteCaseStatus,
 } from "../db";
-import { GroupFeature, SnapshotType, VoteCaseStatus } from "../enums";
+import { Action, GroupFeature, SnapshotType, VoteCaseStatus } from "../enums";
 import {
   caseKey,
   getMessageSnapshot,
@@ -25,6 +25,183 @@ export const voteHandlers = new Composer<BotContext>();
 
 const ADMIN_TEST_BAN_KEYWORD = "testban";
 
+const getVoteTotal = (voteCase: VoteCase): number => {
+  return voteCase.voters.size + voteCase.extraAdminVotes;
+};
+
+const ensureVoteCase = async (
+  ctx: BotContext,
+  chatId: number,
+  chatTitle: string | undefined,
+  targetMessageId: number,
+  targetUser: TargetUser,
+  snapshot: ReturnType<typeof getMessageSnapshot>,
+): Promise<VoteCase> => {
+  const key = caseKey(chatId, targetMessageId);
+  const existingCase = ctx.voteCases.get(key);
+
+  if (existingCase) {
+    return existingCase;
+  }
+
+  const createdCase: VoteCase = {
+    chatId,
+    targetMessageId,
+    targetUser,
+    snapshotMessageType: snapshot.type,
+    snapshotMessagePreview: snapshot.preview,
+    snapshotMessageContent: snapshot.content,
+    snapshotMediaFileId: snapshot.mediaFileId,
+    voters: new Set<number>(),
+    extraAdminVotes: 0,
+    status: VoteCaseStatus.VOTING,
+    voteCommandMessageIds: new Set<number>(),
+    botMessageIds: new Set<number>(),
+    statusMsgId: undefined,
+  };
+
+  ctx.voteCases.set(key, createdCase);
+
+  await upsertVoteCase(
+    ctx.db,
+    chatId,
+    chatTitle,
+    targetMessageId,
+    targetUser.id,
+    targetUser.firstName,
+    targetUser.username,
+    snapshot.type,
+    snapshot.preview,
+    snapshot.content,
+    snapshot.mediaFileId,
+  );
+
+  return createdCase;
+};
+
+const finalizeVoteCase = async (
+  ctx: BotContext,
+  voteCase: VoteCase,
+  votes: number,
+): Promise<void> => {
+  const chatId = voteCase.chatId;
+  const targetMessageId = voteCase.targetMessageId;
+
+  voteCase.status = VoteCaseStatus.PENDING_ADMIN;
+
+  await updateVoteCaseStatus(
+    ctx.db,
+    chatId,
+    targetMessageId,
+    VoteCaseStatus.PENDING_ADMIN,
+  );
+
+  await safeDelete(ctx.telegram, chatId, targetMessageId);
+
+  try {
+    await ctx.telegram.restrictChatMember(chatId, voteCase.targetUser.id, {
+      permissions: {
+        can_send_messages: false,
+      },
+    });
+  } catch (error) {
+    console.error(
+      `Failed to mute target user ${voteCase.targetUser.id}: ${error instanceof Error ? error.message : "Unknown error"}`,
+    );
+  }
+
+  if (voteCase.statusMsgId) {
+    await safeDelete(ctx.telegram, chatId, voteCase.statusMsgId);
+
+    voteCase.botMessageIds.delete(voteCase.statusMsgId);
+    voteCase.statusMsgId = undefined;
+  }
+
+  const admins = await ctx.telegram.getChatAdministrators(chatId);
+
+  const adminMentions = admins
+    .filter((admin) => admin.user.username)
+    .map((admin) => `@${admin.user.username}`)
+    .join(" ");
+
+  const adminNotice = adminMentions
+    ? ctx.t("admin.notice_mentions", { mentions: adminMentions })
+    : ctx.t("admin.notice_generic");
+
+  const suspectUsername = voteCase.targetUser.username
+    ? `@${voteCase.targetUser.username}`
+    : ctx.t("admin.suspect_no_username");
+
+  const adminDecisionReply = await ctx.reply(
+    ctx.t("vote.admin_decision", {
+      firstName: voteCase.targetUser.firstName,
+      username: suspectUsername,
+      userId: voteCase.targetUser.id,
+      votes,
+      requiredVotes: ctx.requiredVotes,
+      adminNotice,
+    }),
+    adminDecisionMarkup(ctx.t, chatId, targetMessageId, voteCase.targetUser.id),
+  );
+
+  voteCase.botMessageIds.add(adminDecisionReply.message_id);
+};
+
+const registerVote = async (
+  ctx: BotContext,
+  voteCase: VoteCase,
+  voterId: number,
+  voteWeight: number,
+): Promise<"registered" | "duplicate" | "closed"> => {
+  if (voteCase.status !== VoteCaseStatus.VOTING) {
+    return "closed";
+  }
+
+  if (voteCase.voters.has(voterId)) {
+    return "duplicate";
+  }
+
+  const inserted = await addVote(
+    ctx.db,
+    voteCase.chatId,
+    voteCase.targetMessageId,
+    voterId,
+  );
+
+  if (!inserted) {
+    voteCase.voters.add(voterId);
+
+    return "duplicate";
+  }
+
+  voteCase.voters.add(voterId);
+
+  if (voteWeight > 1) {
+    voteCase.extraAdminVotes += voteWeight - 1;
+  }
+
+  const votes = getVoteTotal(voteCase);
+
+  await upsertVoteStatusMessage(
+    ctx.telegram,
+    ctx.db,
+    ctx.t,
+    voteCase,
+    voteCase.targetMessageId,
+    votes,
+    ctx.banKeyword,
+    ctx.requiredVotes,
+  );
+
+  if (votes < ctx.requiredVotes) {
+    return "registered";
+  }
+
+  await finalizeVoteCase(ctx, voteCase, votes);
+
+  return "registered";
+};
+
 voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const incomingMessage = ctx.message;
 
@@ -32,7 +209,7 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
     return;
   }
 
-  if (!isGroup(ctx.chat.type)) {
+  if (!ctx.chat || !isGroup(ctx.chat.type)) {
     return;
   }
 
@@ -72,7 +249,6 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
   const snapshot = getMessageSnapshot(ctx.t, reply);
   const chatId = ctx.chat.id;
   const targetMessageId = reply.message_id;
-  const key = caseKey(chatId, targetMessageId);
   const voterId = incomingMessage.from.id;
   const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
   const isAdminUser = isAdmin(voterMember);
@@ -122,42 +298,14 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
     return;
   }
 
-  let current = ctx.voteCases.get(key);
-
-  if (!current) {
-    const createdCase: VoteCase = {
-      chatId,
-      targetMessageId,
-      targetUser,
-      snapshotMessageType: snapshot.type,
-      snapshotMessagePreview: snapshot.preview,
-      snapshotMessageContent: snapshot.content,
-      snapshotMediaFileId: snapshot.mediaFileId,
-      voters: new Set<number>(),
-      extraAdminVotes: 0,
-      status: VoteCaseStatus.VOTING,
-      voteCommandMessageIds: new Set<number>(),
-      botMessageIds: new Set<number>(),
-      statusMsgId: undefined,
-    };
-
-    ctx.voteCases.set(key, createdCase);
-    current = createdCase;
-
-    await upsertVoteCase(
-      ctx.db,
-      chatId,
-      "title" in ctx.chat ? ctx.chat.title : undefined,
-      targetMessageId,
-      targetUser.id,
-      targetUser.firstName,
-      targetUser.username,
-      snapshot.type,
-      snapshot.preview,
-      snapshot.content,
-      snapshot.mediaFileId,
-    );
-  }
+  const current = await ensureVoteCase(
+    ctx,
+    chatId,
+    "title" in ctx.chat ? ctx.chat.title : undefined,
+    targetMessageId,
+    targetUser,
+    snapshot,
+  );
 
   if (current.status !== VoteCaseStatus.VOTING) {
     await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
@@ -169,134 +317,66 @@ voteHandlers.on(message(SnapshotType.TEXT), async (ctx) => {
 
   await safeDelete(ctx.telegram, chatId, incomingMessage.message_id);
 
-  if (!current.voters.has(voterId)) {
-    const weight = await getUserTrustWeight(ctx.db, chatId, voterId);
-    const extraVotesFromWeight = weight > 1 ? weight - 1 : 0;
-    const extraVotesFromAdminTestBan = shouldApplyAdminTestVotes
-      ? ctx.requiredVotes - 1
-      : 0;
+  const weight = shouldApplyAdminTestVotes
+    ? 1
+    : await getUserTrustWeight(ctx.db, chatId, voterId);
 
-    if (extraVotesFromWeight > 0 || extraVotesFromAdminTestBan > 0) {
-      current.extraAdminVotes +=
-        extraVotesFromWeight + extraVotesFromAdminTestBan;
-    }
+  await registerVote(ctx, current, voterId, weight);
+});
 
-    current.voters.add(voterId);
-  } else {
-    const previousSize = current.voters.size;
+voteHandlers.on(callbackQuery("data"), async (ctx, next) => {
+  const callbackData = ctx.callbackQuery.data;
 
-    current.voters.add(voterId);
-
-    const isNewVote = current.voters.size > previousSize;
-    let countedAsAdminOverride = false;
-
-    if (isNewVote) {
-      await addVote(ctx.db, chatId, targetMessageId, voterId);
-    } else {
-      const voterMember = await ctx.telegram.getChatMember(chatId, voterId);
-      const voterIsAdmin = isAdmin(voterMember);
-
-      if (voterIsAdmin) {
-        current.extraAdminVotes += 1;
-        countedAsAdminOverride = true;
-      }
-
-      if (countedAsAdminOverride) {
-        const votes = current.voters.size + current.extraAdminVotes;
-
-        await upsertVoteStatusMessage(
-          ctx.telegram,
-          ctx.db,
-          ctx.t,
-          current,
-          targetMessageId,
-          votes,
-          ctx.banKeyword,
-          ctx.requiredVotes,
-        );
-
-        if (votes < ctx.requiredVotes) {
-          return;
-        }
-      } else {
-        return;
-      }
-    }
+  if (!callbackData) {
+    return next();
   }
 
-  const votes = current.voters.size + current.extraAdminVotes;
+  const [action, rawChatId, rawTargetMessageId] = callbackData.split("|");
 
-  await upsertVoteStatusMessage(
-    ctx.telegram,
-    ctx.db,
-    ctx.t,
-    current,
-    targetMessageId,
-    votes,
-    ctx.banKeyword,
-    ctx.requiredVotes,
-  );
+  if (action !== Action.VOTE_CAST || !rawChatId || !rawTargetMessageId) {
+    return next();
+  }
 
-  if (votes < ctx.requiredVotes) {
+  const chatId = Number(rawChatId);
+  const targetMessageId = Number(rawTargetMessageId);
+  const voteCase = ctx.voteCases.get(caseKey(chatId, targetMessageId));
+
+  if (!voteCase || voteCase.status !== VoteCaseStatus.VOTING) {
+    await ctx.answerCbQuery(ctx.t("vote.closed"), {
+      show_alert: true,
+    });
+
     return;
   }
 
-  current.status = VoteCaseStatus.PENDING_ADMIN;
+  const voterId = ctx.from.id;
 
-  await updateVoteCaseStatus(
-    ctx.db,
-    chatId,
-    targetMessageId,
-    VoteCaseStatus.PENDING_ADMIN,
-  );
-
-  await safeDelete(ctx.telegram, chatId, targetMessageId);
-
-  try {
-    await ctx.telegram.restrictChatMember(chatId, current.targetUser.id, {
-      permissions: {
-        can_send_messages: false,
-      },
+  if (voteCase.voters.has(voterId)) {
+    await ctx.answerCbQuery(ctx.t("vote.already_voted"), {
+      show_alert: true,
     });
-  } catch (error) {
-    console.error(
-      `Failed to mute target user ${current.targetUser.id}: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
+
+    return;
   }
 
-  if (current.statusMsgId) {
-    await safeDelete(ctx.telegram, chatId, current.statusMsgId);
+  const weight = await getUserTrustWeight(ctx.db, chatId, voterId);
+  const result = await registerVote(ctx, voteCase, voterId, weight);
 
-    current.botMessageIds.delete(current.statusMsgId);
-    current.statusMsgId = undefined;
+  if (result === "duplicate") {
+    await ctx.answerCbQuery(ctx.t("vote.already_voted"), {
+      show_alert: true,
+    });
+
+    return;
   }
 
-  const admins = await ctx.telegram.getChatAdministrators(chatId);
+  if (result === "closed") {
+    await ctx.answerCbQuery(ctx.t("vote.closed"), {
+      show_alert: true,
+    });
 
-  const adminMentions = admins
-    .filter((admin) => admin.user.username)
-    .map((admin) => `@${admin.user.username}`)
-    .join(" ");
+    return;
+  }
 
-  const adminNotice = adminMentions
-    ? ctx.t("admin.notice_mentions", { mentions: adminMentions })
-    : ctx.t("admin.notice_generic");
-
-  const suspectUsername = current.targetUser.username
-    ? `@${current.targetUser.username}`
-    : ctx.t("admin.suspect_no_username");
-
-  const adminDecisionReply = await ctx.reply(
-    ctx.t("vote.admin_decision", {
-      firstName: current.targetUser.firstName,
-      username: suspectUsername,
-      userId: current.targetUser.id,
-      votes,
-      requiredVotes: ctx.requiredVotes,
-      adminNotice,
-    }),
-    adminDecisionMarkup(ctx.t, chatId, targetMessageId, current.targetUser.id),
-  );
-
-  current.botMessageIds.add(adminDecisionReply.message_id);
+  await ctx.answerCbQuery(ctx.t("vote.registered"));
 });
