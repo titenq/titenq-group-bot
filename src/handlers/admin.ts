@@ -1,27 +1,28 @@
 import { Composer } from "telegraf";
 import { callbackQuery } from "telegraf/filters";
 
-import { updateVoteCaseStatus } from "../db";
-import { Action } from "../enums/action";
-import { VoteCaseStatus } from "../enums/vote-case-status";
-import { caseKey } from "../helpers/case-key";
-import { cleanupCaseMessages } from "../helpers/cleanup-case-messages";
-import { formatVoterDisplay } from "../helpers/format-voter-display";
-import { isAdmin } from "../helpers/is-admin";
-import { isSnapshotMediaType } from "../helpers/is-snapshot-media-type";
-import { safeDelete } from "../helpers/safe-delete";
-import { sendSnapshotMedia } from "../helpers/send-snapshot-media";
-import { truncateText } from "../helpers/truncate-text";
-import { BotContext } from "../interfaces/bot-context";
+import { addGlobalBan, getUserTrustWeight, updateVoteCaseStatus } from "../db";
+import { Action, VoteCaseStatus } from "../enums";
+import {
+  caseKey,
+  cleanupCaseMessages,
+  formatVoterDisplay,
+  isAdmin,
+  isSnapshotMediaType,
+  safeDelete,
+  sendSnapshotMedia,
+  truncateText,
+} from "../helpers";
+import { BotContext } from "../interfaces";
 import { previewDecisionMarkup } from "../markups/preview-decision";
 
 export const adminHandlers = new Composer<BotContext>();
 
-adminHandlers.on(callbackQuery("data"), async (ctx) => {
+adminHandlers.on(callbackQuery("data"), async (ctx, next) => {
   const callback = ctx.callbackQuery;
 
   if (!callback.data) {
-    return;
+    return next();
   }
 
   const [action, rawChatId, rawMessageId, rawArg] = callback.data.split("|");
@@ -33,7 +34,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
     !rawArg ||
     !Object.values(Action).includes(action as Action)
   ) {
-    return;
+    return next();
   }
 
   const chatId = Number(rawChatId);
@@ -128,6 +129,21 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
       VoteCaseStatus.IGNORED,
     );
 
+    voteCase.status = VoteCaseStatus.IGNORED;
+
+    const callbackMessageId =
+      ctx.callbackQuery.message && "message_id" in ctx.callbackQuery.message
+        ? ctx.callbackQuery.message.message_id
+        : undefined;
+
+    await cleanupCaseMessages(
+      ctx.telegram,
+      voteCase,
+      callbackMessageId ? [callbackMessageId] : [],
+    );
+
+    ctx.voteCases.delete(caseKey(chatId, messageId));
+
     return;
   }
 
@@ -149,6 +165,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
         : `${callback.from.first_name} (${callback.from.id})`;
 
       const previewMessageId = await sendSnapshotMedia(
+        ctx.t,
         chatId,
         voteCase,
         ctx.t("admin.viewed_by", { viewedBy }),
@@ -206,27 +223,50 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
       return;
     }
 
-    const voterNames = await Promise.all(
-      voters.map((voterId) =>
-        formatVoterDisplay(ctx.telegram, chatId, voterId),
-      ),
+    const voterDisplays = await Promise.all(
+      voters.map(async (voterId) => {
+        const [name, weight] = await Promise.all([
+          formatVoterDisplay(ctx.t, ctx.telegram, chatId, voterId),
+          getUserTrustWeight(ctx.db, chatId, voterId),
+        ]);
+
+        return {
+          name,
+          weight,
+        };
+      }),
     );
 
-    const votersText = voterNames
-      .map((name, i) => `${i + 1}. ${name}`)
-      .join("\n");
+    const totalBaseExtraVotes = voterDisplays.reduce((total, voterDisplay) => {
+      return total + Math.max(voterDisplay.weight - 1, 0);
+    }, 0);
 
-    const extraVotesText =
-      voteCase.extraAdminVotes > 0
-        ? ctx.t("admin.voters_extra_admin", { count: voteCase.extraAdminVotes })
-        : "";
+    const remainingExtraVotes = Math.max(
+      voteCase.extraAdminVotes - totalBaseExtraVotes,
+      0,
+    );
+
+    const votersText = voterDisplays
+      .map((voterDisplay, i) => {
+        const displayWeight =
+          i === 0
+            ? voterDisplay.weight + remainingExtraVotes
+            : voterDisplay.weight;
+
+        return ctx.t("admin.voter_with_weight", {
+          index: i + 1,
+          name: voterDisplay.name,
+          weight: displayWeight,
+        });
+      })
+      .join("\n");
 
     await ctx.answerCbQuery(
       truncateText(
         ctx.t("admin.voters_list_title", {
           count: voters.length,
           list: votersText,
-        }) + extraVotesText,
+        }),
         ctx.maxAlertText,
       ),
       {
@@ -259,6 +299,7 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
       voteCase.snapshotMediaFileId
     ) {
       await sendSnapshotMedia(
+        ctx.t,
         chatId,
         voteCase,
         ctx.t("admin.restored_by_title", { restoredBy }),
@@ -333,6 +374,8 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
   }
 
   const targetUserId = actionArg;
+  const groupName =
+    ctx.chat && "title" in ctx.chat ? ctx.chat.title : "Unknown";
   const decisionText =
     action === Action.ADMIN_BAN
       ? ctx.t("admin.word_banned")
@@ -358,6 +401,29 @@ adminHandlers.on(callbackQuery("data"), async (ctx) => {
       });
 
       return;
+    }
+
+    if (voteCase) {
+      try {
+        await addGlobalBan(ctx.db, {
+          user_id: voteCase.targetUser.id,
+          username: voteCase.targetUser.username ?? null,
+          group_id: chatId,
+          group_name: groupName,
+          message_text:
+            voteCase.snapshotMessageContent ||
+            voteCase.snapshotMessagePreview ||
+            null,
+          reason: null,
+          admin_id: actorId,
+        });
+      } catch (error) {
+        console.error(
+          `[Admin] Failed to persist global ban: ${
+            error instanceof Error ? error.message : "unknown error"
+          }`,
+        );
+      }
     }
   }
 

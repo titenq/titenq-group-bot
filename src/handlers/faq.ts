@@ -1,42 +1,120 @@
 import { Composer, Markup } from "telegraf";
-import { message } from "telegraf/filters";
 
-import { FAQ_ERROR_TTL_MS, FAQ_TRIGGER_LENGTH } from "../config/env";
+import { FAQ_TRIGGER_LENGTH } from "../config/env";
 import {
   getGroupFaq,
   listGroupFaqs,
   removeGroupFaq,
   upsertGroupFaq,
 } from "../db";
-import { isAdmin } from "../helpers/is-admin";
-import { normalize } from "../helpers/normalize";
-import { safeDelete } from "../helpers/safe-delete";
-import { validateTelegramLink } from "../helpers/validate-telegram-link";
-import { BotContext } from "../interfaces/bot-context";
+import { GroupFeature } from "../enums";
+import {
+  isGroupFeatureEnabled,
+  isAdmin,
+  normalize,
+  safeDelete,
+  scheduleMessageCleanup,
+  validateTelegramLink,
+} from "../helpers";
+import { BotContext } from "../interfaces";
 
 export const faqHandlers = new Composer<BotContext>();
 
-faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => {
+faqHandlers.command("faq", async (ctx) => {
   if (!ctx.chat) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.FAQ))) {
+    return;
+  }
+
+  const fullText = ctx.message.text;
+  const firstSpaceIndex = fullText.indexOf(" ");
+
+  const argString =
+    firstSpaceIndex === -1 ? "" : fullText.slice(firstSpaceIndex + 1);
+
+  const parts = argString.trim().split(" ").filter(Boolean);
+
+  if (parts.length === 0) {
+    const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
+
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
+
+    return;
+  }
+
+  if (parts.length === 1) {
+    const triggerKeyword = normalize(parts[0]);
+
+    if (triggerKeyword.length > FAQ_TRIGGER_LENGTH) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_trigger_too_long", {
+          maxLength: FAQ_TRIGGER_LENGTH,
+        }),
+      );
+
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
+
+      return;
+    }
+
+    if (!ctx.message.reply_to_message) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_trigger_reply_required"),
+      );
+
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+        triggerMessageId: ctx.message.message_id,
+      });
+
+      return;
+    }
+
+    const messageLink = await getGroupFaq(ctx.db, ctx.chat.id, triggerKeyword);
+
+    if (!messageLink) {
+      const errorMsg = await ctx.reply(
+        ctx.t("commands.faq_not_found", { trigger: triggerKeyword }),
+      );
+
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
+
+      return;
+    }
+
+    await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
+    await ctx.reply(
+      ctx.t("commands.faq_reply_message", { link: messageLink }),
+      {
+        reply_parameters: {
+          message_id: ctx.message.reply_to_message.message_id,
+        },
+      },
+    );
+
     return;
   }
 
   const actor = await ctx.telegram.getChatMember(ctx.chat.id, ctx.from.id);
 
   if (!isAdmin(actor)) {
-    return;
-  }
-
-  const argString = ctx.match[1] || "";
-  const parts = argString.trim().split(" ").filter(Boolean);
-
-  if (parts.length === 0) {
-    const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
-
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
-
     return;
   }
 
@@ -48,12 +126,18 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     triggerKeyword = normalize(triggerKeyword);
   }
 
-  if (!triggerKeyword || (!isRemoving && !urlLink)) {
+  if (
+    !triggerKeyword ||
+    (isRemoving && parts.length !== 2) ||
+    (!isRemoving && parts.length !== 2)
+  ) {
     const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -63,9 +147,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
       ctx.t("commands.faq_trigger_too_long", { maxLength: FAQ_TRIGGER_LENGTH }),
     );
 
-    setTimeout(() => {
-      safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-    }, FAQ_ERROR_TTL_MS);
+    scheduleMessageCleanup({
+      botMessageId: errorMsg.message_id,
+      chatId: ctx.chat.id,
+      telegram: ctx.telegram,
+    });
 
     return;
   }
@@ -76,9 +162,11 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
     if (!isValid) {
       const errorMsg = await ctx.reply(ctx.t("commands.faq_invalid_format"));
 
-      setTimeout(() => {
-        safeDelete(ctx.telegram, ctx.chat!.id, errorMsg.message_id);
-      }, FAQ_ERROR_TTL_MS);
+      scheduleMessageCleanup({
+        botMessageId: errorMsg.message_id,
+        chatId: ctx.chat.id,
+        telegram: ctx.telegram,
+      });
 
       return;
     }
@@ -111,8 +199,12 @@ faqHandlers.hears(/^\/f[aáàâãä]q(?:@[\w]+)?(?:\s+(.+))?$/i, async (ctx) => 
   }
 });
 
-faqHandlers.hears(/^\/f[aáàâãä]qs(?:@[\w]+)?$/i, async (ctx) => {
+faqHandlers.command("faqs", async (ctx) => {
   if (!ctx.chat) {
+    return;
+  }
+
+  if (!(await isGroupFeatureEnabled(ctx, GroupFeature.FAQ))) {
     return;
   }
 
@@ -141,48 +233,4 @@ faqHandlers.hears(/^\/f[aáàâãä]qs(?:@[\w]+)?$/i, async (ctx) => {
       `Failed to execute /faqs: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
-});
-
-faqHandlers.on(message("text"), async (ctx, next) => {
-  if (!ctx.chat || !ctx.message.reply_to_message) {
-    return next();
-  }
-
-  const potentialTrigger = normalize(ctx.message.text);
-
-  if (
-    potentialTrigger.length > FAQ_TRIGGER_LENGTH ||
-    potentialTrigger.includes(" ")
-  ) {
-    return next();
-  }
-
-  try {
-    const messageLink = await getGroupFaq(
-      ctx.db,
-      ctx.chat.id,
-      potentialTrigger,
-    );
-
-    if (messageLink) {
-      await safeDelete(ctx.telegram, ctx.chat.id, ctx.message.message_id);
-
-      await ctx.reply(
-        ctx.t("commands.faq_reply_message", { link: messageLink }),
-        {
-          reply_parameters: {
-            message_id: ctx.message.reply_to_message.message_id,
-          },
-        },
-      );
-
-      return;
-    }
-  } catch (error) {
-    console.error(
-      `Error intercepting FAQ reply trigger: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  }
-
-  return next();
 });

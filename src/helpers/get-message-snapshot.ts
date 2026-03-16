@@ -1,14 +1,18 @@
+import { TFunction } from "i18next";
 import { Message, PhotoSize } from "telegraf/types";
 
 import {
   MAX_SNAPSHOT_CONTENT,
   MAX_SNAPSHOT_PREVIEW,
 } from "../config/constants";
-import { SnapshotType, SnapshotCaptionMediaType } from "../enums/snapshot";
-import { MessageSnapshot } from "../interfaces/bot";
+import { SnapshotCaptionMediaType, SnapshotType } from "../enums";
+import { MessageSnapshot } from "../interfaces";
 import { truncateText } from "./truncate-text";
 
-export const getMessageSnapshot = (message: Message): MessageSnapshot => {
+export const getMessageSnapshot = (
+  t: TFunction,
+  message: Message,
+): MessageSnapshot => {
   const getFileId = (field: string): string | undefined => {
     if (!(field in message)) {
       return undefined;
@@ -84,7 +88,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.STICKER in message) {
     return {
       type: SnapshotType.STICKER,
-      preview: "[sticker]",
+      preview: t("snapshots.sticker"),
       content: "",
       mediaFileId: getFileId(SnapshotType.STICKER),
     };
@@ -93,7 +97,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.PHOTO in message) {
     return {
       type: SnapshotType.PHOTO,
-      preview: "[foto sem legenda]",
+      preview: t("snapshots.photo_without_caption"),
       content: "",
       mediaFileId: getPhotoFileId(),
     };
@@ -102,7 +106,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.VIDEO in message) {
     return {
       type: SnapshotType.VIDEO,
-      preview: "[vídeo sem legenda]",
+      preview: t("snapshots.video_without_caption"),
       content: "",
       mediaFileId: getFileId(SnapshotType.VIDEO),
     };
@@ -111,7 +115,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.VOICE in message) {
     return {
       type: SnapshotType.VOICE,
-      preview: "[áudio de voz]",
+      preview: t("snapshots.voice"),
       content: "",
       mediaFileId: getFileId(SnapshotType.VOICE),
     };
@@ -120,7 +124,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.DOCUMENT in message) {
     return {
       type: SnapshotType.DOCUMENT,
-      preview: "[documento sem legenda]",
+      preview: t("snapshots.document_without_caption"),
       content: "",
       mediaFileId: getFileId(SnapshotType.DOCUMENT),
     };
@@ -129,7 +133,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.ANIMATION in message) {
     return {
       type: SnapshotType.ANIMATION,
-      preview: "[animação sem legenda]",
+      preview: t("snapshots.animation_without_caption"),
       content: "",
       mediaFileId: getFileId(SnapshotType.ANIMATION),
     };
@@ -138,7 +142,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
   if (SnapshotType.AUDIO in message) {
     return {
       type: SnapshotType.AUDIO,
-      preview: "[áudio sem legenda]",
+      preview: t("snapshots.audio_without_caption"),
       content: "",
       mediaFileId: getFileId(SnapshotType.AUDIO),
     };
@@ -146,7 +150,7 @@ export const getMessageSnapshot = (message: Message): MessageSnapshot => {
 
   return {
     type: SnapshotType.UNKNOWN,
-    preview: "[conteúdo sem texto]",
+    preview: t("snapshots.content_without_text"),
     content: "",
   };
 };
